@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rotating Exotic-Stabilised Throat — Engineering Reference</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap');
+:root{--navy:#0b1120;--deep:#0d1628;--panel:#111e36;--teal:#00c8c8;--gold:#e8a020;--red:#e05050;--purple:#a070e0;--green:#40d080;--dim:#2a3f5a;--text:#c8daea;--sub:#6a8aaa;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--navy);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;overflow-x:hidden;}
+header{border-bottom:1px solid var(--dim);padding:14px 28px;display:flex;align-items:center;gap:20px;background:var(--deep);position:sticky;top:0;z-index:100;}
+header h1{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:3px;color:var(--teal);text-transform:uppercase;}
+header .sub-head{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--sub);letter-spacing:1px;}
+.badge{margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--gold);border:1px solid var(--gold);padding:3px 10px;letter-spacing:2px;}
+.tab-nav{display:flex;border-bottom:1px solid var(--dim);background:var(--deep);padding:0 28px;}
+.tab-btn{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--sub);background:none;border:none;cursor:pointer;padding:12px 24px;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--teal);border-bottom-color:var(--teal);}
+.tab-num{color:var(--dim);margin-right:8px;font-size:9px;}
+.tab-btn.active .tab-num{color:var(--teal);opacity:.5;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* TAB 1 */
+.workspace{display:grid;grid-template-columns:1fr 300px;min-height:calc(100vh - 97px);}
+.diagram-panel{padding:28px 32px;display:flex;flex-direction:column;align-items:center;gap:20px;}
+.diagram-title{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--sub);letter-spacing:2px;text-transform:uppercase;align-self:flex-start;}
+svg.main-diagram{width:100%;max-width:680px;height:auto;filter:drop-shadow(0 0 40px rgba(0,200,200,.07));}
+.eq-strip{width:100%;max-width:680px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.eq-card{background:var(--panel);border:1px solid var(--dim);border-top:2px solid;padding:12px 14px;}
+.eq-card.teal{border-top-color:var(--teal);}.eq-card.gold{border-top-color:var(--gold);}.eq-card.purple{border-top-color:var(--purple);}
+.eq-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);letter-spacing:2px;margin-bottom:7px;text-transform:uppercase;}
+.eq-formula{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text);line-height:1.7;}
+.eq-formula em{color:var(--teal);font-style:normal;}.eq-formula .g{color:var(--gold);}.eq-formula .p{color:var(--purple);}
+.sidebar{border-left:1px solid var(--dim);background:var(--panel);display:flex;flex-direction:column;overflow-y:auto;}
+.sidebar-section{border-bottom:1px solid var(--dim);padding:18px;}
+.sidebar-section h3{font-family:'Orbitron',monospace;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--sub);margin-bottom:12px;}
+.layer-item{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;}
+.layer-dot{width:9px;height:9px;border-radius:50%;margin-top:4px;flex-shrink:0;border:2px solid;}
+.layer-dot.teal{background:rgba(0,200,200,.2);border-color:var(--teal);}.layer-dot.gold{background:rgba(232,160,32,.2);border-color:var(--gold);}.layer-dot.purple{background:rgba(160,112,224,.2);border-color:var(--purple);}.layer-dot.green{background:rgba(64,208,128,.2);border-color:var(--green);}.layer-dot.red{background:rgba(224,80,80,.2);border-color:var(--red);}
+.layer-info h4{font-size:11px;font-weight:600;margin-bottom:2px;}.layer-info h4.teal{color:var(--teal);}.layer-info h4.gold{color:var(--gold);}.layer-info h4.purple{color:var(--purple);}.layer-info h4.green{color:var(--green);}.layer-info h4.red{color:var(--red);}
+.layer-info p{font-size:10px;color:var(--sub);line-height:1.5;}
+.param-row{display:grid;grid-template-columns:80px 1fr;gap:6px;align-items:baseline;margin-bottom:9px;}
+.param-sym{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--teal);}
+.param-desc{font-size:10px;color:var(--sub);line-height:1.4;}
+.status-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.status-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);letter-spacing:1px;}
+.status-bar{width:110px;height:3px;background:var(--dim);border-radius:2px;overflow:hidden;position:relative;}
+.status-fill{height:100%;border-radius:2px;position:absolute;left:0;top:0;animation:pf 3s ease-in-out infinite;}
+@keyframes pf{0%,100%{opacity:1;}50%{opacity:.5;}}
+@keyframes rot-s{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes rot-r{from{transform:rotate(0deg);}to{transform:rotate(-360deg);}}
+@keyframes p-ring{0%,100%{opacity:.3;}50%{opacity:.9;}}
+.spin-torus{animation:rot-s 8s linear infinite;transform-origin:350px 310px;}
+.spin-field{animation:rot-s 12s linear infinite;transform-origin:350px 310px;}
+.spin-inner{animation:rot-r 5s linear infinite;transform-origin:350px 310px;}
+.pulse-throat{animation:p-ring 2.5s ease-in-out infinite;}
+
+/* TAB 2 */
+#tab-hifi.active{display:flex;flex-direction:column;}
+.hifi-toolbar{display:flex;align-items:center;gap:12px;padding:10px 28px;background:var(--deep);border-bottom:1px solid var(--dim);flex-wrap:wrap;}
+.tool-group{display:flex;align-items:center;gap:8px;padding-right:16px;border-right:1px solid var(--dim);}
+.tool-group:last-child{border:none;margin-left:auto;}
+.tool-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--sub);letter-spacing:1px;text-transform:uppercase;}
+.toggle-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;}
+.toggle-track{width:36px;height:18px;border-radius:9px;background:var(--dim);border:1px solid var(--dim);position:relative;transition:background .2s;cursor:pointer;}
+.toggle-track.on{background:rgba(0,200,200,.25);border-color:var(--teal);}
+.toggle-thumb{width:12px;height:12px;border-radius:50%;background:var(--sub);position:absolute;top:2px;left:2px;transition:left .2s,background .2s;}
+.toggle-track.on .toggle-thumb{left:20px;background:var(--teal);}
+.toggle-text{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--sub);letter-spacing:1px;text-transform:uppercase;user-select:none;}
+.pill{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:2px;cursor:pointer;border:1px solid;transition:all .15s;user-select:none;}
+.pill.teal{color:var(--teal);border-color:var(--teal);background:rgba(0,200,200,.08);}
+.pill.gold{color:var(--gold);border-color:var(--gold);background:rgba(232,160,32,.08);}
+.pill.purple{color:var(--purple);border-color:var(--purple);background:rgba(160,112,224,.08);}
+.pill.green{color:var(--green);border-color:var(--green);background:rgba(64,208,128,.08);}
+.pill.red{color:var(--red);border-color:var(--red);background:rgba(224,80,80,.08);}
+.pill.off{opacity:.28;}
+.hifi-main{display:grid;grid-template-columns:1fr 290px;flex:1;overflow:hidden;}
+.hifi-canvas-wrap{padding:20px 24px;display:flex;flex-direction:column;align-items:center;gap:14px;overflow-y:auto;}
+.hifi-view-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--sub);letter-spacing:2px;align-self:flex-start;}
+canvas#hifi-canvas{width:100%;max-width:820px;border:1px solid var(--dim);cursor:grab;background:var(--navy);display:block;}
+canvas#hifi-canvas:active{cursor:grabbing;}
+.detail-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:820px;}
+.detail-card{background:var(--panel);border:1px solid var(--dim);padding:14px;position:relative;}
+.detail-card-title{font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--sub);margin-bottom:10px;}
+canvas.detail-canvas{width:100%;height:140px;display:block;}
+.hifi-sidebar{border-left:1px solid var(--dim);background:var(--panel);overflow-y:auto;display:flex;flex-direction:column;}
+.hs-section{border-bottom:1px solid var(--dim);padding:16px 18px;}
+.hs-section h3{font-family:'Orbitron',monospace;font-size:8px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--sub);margin-bottom:12px;}
+.ann-item{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px;font-size:10px;}
+.ann-key{font-family:'Share Tech Mono',monospace;font-size:11px;min-width:24px;text-align:right;flex-shrink:0;}
+.ann-text{color:var(--sub);line-height:1.45;}
+.ann-text strong{display:block;margin-bottom:2px;}
+.ann-eq{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text);background:rgba(0,0,0,.3);padding:2px 6px;margin-top:3px;display:inline-block;}
+.data-table{width:100%;border-collapse:collapse;font-size:10px;}
+.data-table td{padding:5px 6px;border-bottom:1px solid var(--dim);vertical-align:top;line-height:1.4;}
+.data-table td:first-child{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--teal);width:70px;}
+.data-table tr:last-child td{border:none;}
+.view-switch{display:flex;}
+.vs-btn{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border:1px solid var(--dim);background:none;color:var(--sub);cursor:pointer;transition:all .15s;}
+.vs-btn:first-child{border-radius:2px 0 0 2px;}.vs-btn:last-child{border-radius:0 2px 2px 0;border-left:none;}.vs-btn:not(:first-child):not(:last-child){border-left:none;}
+.vs-btn.active{background:rgba(0,200,200,.12);color:var(--teal);border-color:var(--teal);}
+</style>
+</head>
+<body>
+<header>
+  <h1>Rotating Exotic-Stabilised Throat</h1>
+  <span class="sub-head">Engineering Reference  //  GR Construct  //  Rev 0.4</span>
+  <span class="badge">THEORETICAL</span>
+</header>
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('wireframe',this)"><span class="tab-num">01</span>WIREFRAME OVERVIEW</button>
+  <button class="tab-btn" onclick="switchTab('hifi',this)"><span class="tab-num">02</span>HI-FI ENGINEERING VIEW</button>
+</div>
+
+<!-- TAB 1 -->
+<div id="tab-wireframe" class="tab-content active">
+<div class="workspace">
+  <div class="diagram-panel">
+    <div class="diagram-title">// FIG 1 — AXIAL CROSS-SECTION (not to scale)</div>
+    <svg class="main-diagram" viewBox="0 0 700 620" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="w-tG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#a070e0" stop-opacity=".9"/><stop offset="60%" stop-color="#5030a0" stop-opacity=".4"/><stop offset="100%" stop-color="#a070e0" stop-opacity="0"/></radialGradient>
+        <radialGradient id="w-trG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a3a5a"/><stop offset="100%" stop-color="#0d2040"/></radialGradient>
+        <radialGradient id="w-cG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2a1a4a"/><stop offset="100%" stop-color="#1a0d30"/></radialGradient>
+        <radialGradient id="w-cpG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1a3020" stop-opacity="0"/><stop offset="80%" stop-color="#20e070" stop-opacity=".08"/><stop offset="100%" stop-color="#20e070" stop-opacity="0"/></radialGradient>
+        <filter id="w-b4"><feGaussianBlur stdDeviation="4"/></filter>
+        <filter id="w-b2"><feGaussianBlur stdDeviation="2"/></filter>
+        <marker id="w-aT" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#00c8c8" opacity=".8"/></marker>
+        <marker id="w-aG" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#e8a020"/></marker>
+      </defs>
+      <g opacity=".06" stroke="#00c8c8" stroke-width=".5"><line x1="0" y1="155" x2="700" y2="155"/><line x1="0" y1="310" x2="700" y2="310"/><line x1="0" y1="465" x2="700" y2="465"/><line x1="175" y1="0" x2="175" y2="620"/><line x1="350" y1="0" x2="350" y2="620"/><line x1="525" y1="0" x2="525" y2="620"/></g>
+      <line x1="350" y1="20" x2="350" y2="600" stroke="#2a3f5a" stroke-width=".8" stroke-dasharray="4,4"/>
+      <line x1="40" y1="310" x2="660" y2="310" stroke="#2a3f5a" stroke-width=".8" stroke-dasharray="4,4"/>
+      <g class="spin-field"><ellipse cx="350" cy="310" rx="270" ry="270" fill="none" stroke="#00c8c8" stroke-width=".5" stroke-dasharray="3,12" opacity=".22"/><ellipse cx="350" cy="310" rx="240" ry="240" fill="none" stroke="#00c8c8" stroke-width=".5" stroke-dasharray="3,18" opacity=".16"/><ellipse cx="350" cy="310" rx="210" ry="210" fill="none" stroke="#00c8c8" stroke-width=".5" stroke-dasharray="2,16" opacity=".12"/></g>
+      <ellipse cx="350" cy="310" rx="195" ry="195" fill="none" stroke="#00c8c8" stroke-width="16" opacity=".06" filter="url(#w-b4)"/>
+      <g class="spin-torus">
+        <ellipse cx="196" cy="310" rx="58" ry="58" fill="url(#w-trG)" stroke="#00c8c8" stroke-width="1.5" opacity=".9"/>
+        <ellipse cx="504" cy="310" rx="58" ry="58" fill="url(#w-trG)" stroke="#00c8c8" stroke-width="1.5" opacity=".9"/>
+        <ellipse cx="350" cy="156" rx="58" ry="58" fill="url(#w-trG)" stroke="#00c8c8" stroke-width="1.5" opacity=".9"/>
+        <ellipse cx="350" cy="464" rx="58" ry="58" fill="url(#w-trG)" stroke="#00c8c8" stroke-width="1.5" opacity=".9"/>
+        <line x1="165" y1="290" x2="225" y2="310" stroke="#00c8c8" stroke-width=".5" opacity=".3"/><line x1="162" y1="305" x2="228" y2="318" stroke="#00c8c8" stroke-width=".5" opacity=".3"/><line x1="168" y1="320" x2="224" y2="330" stroke="#00c8c8" stroke-width=".5" opacity=".3"/>
+      </g>
+      <circle cx="350" cy="310" r="140" fill="url(#w-cpG)"/>
+      <circle cx="350" cy="310" r="140" fill="none" stroke="#40d080" stroke-width="1" stroke-dasharray="6,6" opacity=".4"/>
+      <text x="470" y="200" font-family="Share Tech Mono" font-size="10" fill="#40d080" opacity=".8">ω(r,θ) MAX</text>
+      <line x1="463" y1="202" x2="430" y2="228" stroke="#40d080" stroke-width=".7" stroke-dasharray="3,3" opacity=".5"/>
+      <g class="spin-inner">
+        <circle cx="350" cy="310" r="100" fill="url(#w-cG)" stroke="#a070e0" stroke-width="1.2" opacity=".85"/>
+        <circle cx="350" cy="310" r="85" fill="none" stroke="#a070e0" stroke-width=".8" stroke-dasharray="4,4" opacity=".6"/>
+        <circle cx="350" cy="310" r="70" fill="none" stroke="#a070e0" stroke-width=".8" stroke-dasharray="4,6" opacity=".5"/>
+        <circle cx="350" cy="310" r="57" fill="none" stroke="#a070e0" stroke-width=".8" stroke-dasharray="3,6" opacity=".4"/>
+        <line x1="255" y1="295" x2="445" y2="295" stroke="#a070e0" stroke-width=".5" opacity=".22"/><line x1="258" y1="310" x2="442" y2="310" stroke="#a070e0" stroke-width=".5" opacity=".22"/><line x1="255" y1="325" x2="445" y2="325" stroke="#a070e0" stroke-width=".5" opacity=".22"/>
+        <line x1="310" y1="215" x2="310" y2="405" stroke="#a070e0" stroke-width=".5" opacity=".18"/><line x1="350" y1="212" x2="350" y2="408" stroke="#a070e0" stroke-width=".5" opacity=".18"/><line x1="390" y1="215" x2="390" y2="405" stroke="#a070e0" stroke-width=".5" opacity=".18"/>
+      </g>
+      <circle cx="350" cy="310" r="50" fill="url(#w-tG)" filter="url(#w-b2)"/>
+      <circle class="pulse-throat" cx="350" cy="310" r="48" fill="none" stroke="#a070e0" stroke-width="2"/>
+      <circle cx="350" cy="310" r="38" fill="#0d0820" opacity=".95"/>
+      <circle cx="350" cy="310" r="38" fill="none" stroke="#a070e0" stroke-width="1" opacity=".6"/>
+      <line x1="350" y1="310" x2="398" y2="310" stroke="#a070e0" stroke-width="1"/>
+      <circle cx="350" cy="310" r="2" fill="#a070e0"/><circle cx="398" cy="310" r="2" fill="#a070e0"/>
+      <text x="360" y="305" font-family="Share Tech Mono" font-size="10" fill="#a070e0">a₀</text>
+      <text x="350" y="314" font-family="Orbitron,monospace" font-size="7" fill="#a070e0" text-anchor="middle" letter-spacing="1">THROAT</text>
+      <line x1="350" y1="52" x2="350" y2="30" stroke="#2a3f5a" stroke-width=".8"/><line x1="156" y1="30" x2="544" y2="30" stroke="#2a3f5a" stroke-width=".8"/><line x1="156" y1="52" x2="156" y2="30" stroke="#2a3f5a" stroke-width=".8"/><line x1="544" y1="52" x2="544" y2="30" stroke="#2a3f5a" stroke-width=".8"/>
+      <text x="350" y="26" font-family="Share Tech Mono" font-size="9" fill="#2a3f5a" text-anchor="middle">R_torus</text>
+      <line x1="252" y1="260" x2="160" y2="220" stroke="#a070e0" stroke-width=".7" stroke-dasharray="3,3" opacity=".5"/>
+      <text x="40" y="215" font-family="Share Tech Mono" font-size="9" fill="#a070e0" opacity=".8">CASIMIR</text><text x="40" y="227" font-family="Share Tech Mono" font-size="9" fill="#a070e0" opacity=".8">ARRAY</text>
+      <line x1="196" y1="254" x2="115" y2="170" stroke="#00c8c8" stroke-width=".7" stroke-dasharray="3,3" opacity=".5"/>
+      <text x="22" y="162" font-family="Share Tech Mono" font-size="9" fill="#00c8c8" opacity=".9">ROTATING</text><text x="22" y="174" font-family="Share Tech Mono" font-size="9" fill="#00c8c8" opacity=".9">DENSE TORUS</text>
+      <line x1="350" y1="578" x2="350" y2="540" stroke="#e8a020" stroke-width="1.5" marker-end="url(#w-aG)"/>
+      <line x1="350" y1="42" x2="350" y2="80" stroke="#e8a020" stroke-width="1.5" marker-end="url(#w-aG)"/>
+      <text x="358" y="573" font-family="Share Tech Mono" font-size="9" fill="#e8a020">J</text><text x="358" y="58" font-family="Share Tech Mono" font-size="9" fill="#e8a020">J</text>
+      <rect x="418" y="378" width="232" height="50" rx="3" fill="#0d1828" stroke="#e8a020" stroke-width=".8" opacity=".9"/>
+      <text x="428" y="397" font-family="Share Tech Mono" font-size="9" fill="#e8a020">KERR SUPPRESSION FACTOR:</text>
+      <text x="428" y="417" font-family="Share Tech Mono" font-size="11" fill="#e8a020">|τ| ~ √(1 − a²/M²)</text>
+      <path d="M 350,464 A 154,154 0 0,0 196,310" fill="none" stroke="#00c8c8" stroke-width="1.1" stroke-dasharray="5,5" marker-end="url(#w-aT)" opacity=".45"/>
+      <path d="M 350,156 A 154,154 0 0,0 504,310" fill="none" stroke="#00c8c8" stroke-width="1.1" stroke-dasharray="5,5" marker-end="url(#w-aT)" opacity=".45"/>
+      <text x="616" y="598" font-family="Share Tech Mono" font-size="9" fill="#2a3f5a">NOT TO SCALE</text>
+      <text x="616" y="610" font-family="Share Tech Mono" font-size="9" fill="#2a3f5a">GR GEOMETRY</text>
+    </svg>
+    <div class="eq-strip">
+      <div class="eq-card teal"><div class="eq-label">// Frame Dragging Rate</div><div class="eq-formula">ω(r,θ) = <em>2Mar</em><br>──────────────<br>(r²+a²)Σ+2Ma²r·sin²θ</div></div>
+      <div class="eq-card gold"><div class="eq-label">// Kerr Throat Tension</div><div class="eq-formula">|τ|<sub>Kerr</sub> ~ <span class="g">c²/G·a₀⁻²</span><br>· <span class="g">√(1−a²/M²)</span></div></div>
+      <div class="eq-card purple"><div class="eq-label">// Echo Spectrum (Eq. 9b)</div><div class="eq-formula">Ḣ(f)=A₀·(f/f₀)²·<span class="p">e^(−η_sf/f₀²)</span><br>f₀=√(<span class="p">σ_throat</span>/a₀²)/2π</div></div>
+    </div>
+  </div>
+  <div class="sidebar">
+    <div class="sidebar-section"><h3>// Layer Architecture</h3>
+      <div class="layer-item"><div class="layer-dot teal"></div><div class="layer-info"><h4 class="teal">L1 — Rotating Dense Torus</h4><p>Maximally dense matter ring at a→M. Generates frame dragging ω(r,θ). Primary Kerr suppression driver.</p></div></div>
+      <div class="layer-item"><div class="layer-dot green"></div><div class="layer-info"><h4 class="green">L2 — Coupling Zone</h4><p>Interior ergosphere: ω(r,θ) maximal. Geometric region, not physical structure. Minimum exotic matter cost.</p></div></div>
+      <div class="layer-item"><div class="layer-dot purple"></div><div class="layer-info"><h4 class="purple">L3 — Casimir Array</h4><p>Nested conducting shells at sub-micron gaps. NEC-violating negative energy density zone.</p></div></div>
+      <div class="layer-item"><div class="layer-dot red"></div><div class="layer-info"><h4 class="red">L4 — Stabilised Throat</h4><p>Geometric feature at a₀. Israel junction equilibrium. Damped harmonic oscillator dynamics.</p></div></div>
+    </div>
+    <div class="sidebar-section"><h3>// Anchor Constants</h3>
+      <div class="param-row"><div class="param-sym">a₀</div><div class="param-desc">Equilibrium throat radius. Rest position of geometric feature.</div></div>
+      <div class="param-row"><div class="param-sym">σ_throat</div><div class="param-desc">Surface energy density. Spring constant for throat oscillations. Sets echo freq f₀.</div></div>
+      <div class="param-row"><div class="param-sym">η_s</div><div class="param-desc">Membrane shear viscosity. Controls oscillation decay. Echo damping rate.</div></div>
+      <div class="param-row"><div class="param-sym">a/M</div><div class="param-desc">Spin parameter ratio. As a→M, exotic budget→0.</div></div>
+    </div>
+    <div class="sidebar-section"><h3>// System State</h3>
+      <div class="status-row"><span class="status-label">SPIN FACTOR a/M</span><div class="status-bar"><div class="status-fill" style="width:78%;background:var(--teal)"></div></div></div>
+      <div class="status-row"><span class="status-label">EXOTIC BUDGET τ</span><div class="status-bar"><div class="status-fill" style="width:22%;background:var(--purple)"></div></div></div>
+      <div class="status-row"><span class="status-label">THROAT STABILITY</span><div class="status-bar"><div class="status-fill" style="width:91%;background:var(--green)"></div></div></div>
+      <div class="status-row"><span class="status-label">KERR SUPPRESSION</span><div class="status-bar"><div class="status-fill" style="width:63%;background:var(--gold)"></div></div></div>
+    </div>
+    <div class="sidebar-section"><h3>// Engineering Status</h3>
+      <p style="font-size:10px;color:var(--sub);line-height:1.7"><span style="color:var(--green)">■</span> Architecture: Theoretically coherent<br><span style="color:var(--gold)">■</span> Kerr suppression: Derived (Tier II)<br><span style="color:var(--purple)">■</span> Coupling tensor: Schematic (Tier III)<br><span style="color:var(--red)">■</span> Realisation: Beyond current tech<br><span style="color:var(--red)">■</span> Bottleneck: Torus density + spin rate</p>
+    </div>
+    <div class="sidebar-section"><h3>// Ref Equations</h3>
+      <p style="font-family:'Share Tech Mono';font-size:10px;color:var(--sub);line-height:2">Eq 5.1 — T_total decomposition<br>Eq 5.4 — ω(r,θ) frame dragging<br>Eq 5.8 — Kerr tension suppression<br>Eq 6.1 — Israel junction cond.<br>Eq 6.3 — Throat oscillator<br>Eq 9b  — Echo spectrum</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- TAB 2 -->
+<div id="tab-hifi" class="tab-content">
+  <div class="hifi-toolbar">
+    <div class="tool-group">
+      <span class="tool-label">Labels</span>
+      <div class="toggle-wrap" onclick="toggleLabels()">
+        <div class="toggle-track on" id="label-track"><div class="toggle-thumb"></div></div>
+        <span class="toggle-text" id="label-text">ON</span>
+      </div>
+    </div>
+    <div class="tool-group">
+      <span class="tool-label">Dimensions</span>
+      <div class="toggle-wrap" onclick="toggleDims()">
+        <div class="toggle-track on" id="dim-track"><div class="toggle-thumb"></div></div>
+        <span class="toggle-text" id="dim-text">ON</span>
+      </div>
+    </div>
+    <div class="tool-group">
+      <span class="tool-label">Equations</span>
+      <div class="toggle-wrap" onclick="toggleEqs()">
+        <div class="toggle-track on" id="eq-track"><div class="toggle-thumb"></div></div>
+        <span class="toggle-text" id="eq-text">ON</span>
+      </div>
+    </div>
+    <div class="tool-group">
+      <span class="tool-label">Layers</span>
+      <span class="pill teal"   id="pill-torus"    onclick="toggleLayer('torus')">L1 Torus</span>
+      <span class="pill green"  id="pill-coupling" onclick="toggleLayer('coupling')">L2 Coupling</span>
+      <span class="pill purple" id="pill-casimir"  onclick="toggleLayer('casimir')">L3 Casimir</span>
+      <span class="pill red"    id="pill-throat"   onclick="toggleLayer('throat')">L4 Throat</span>
+    </div>
+    <div class="tool-group">
+      <span class="tool-label">View</span>
+      <div class="view-switch">
+        <button class="vs-btn active" id="vs-axial"   onclick="setView('axial')">Axial</button>
+        <button class="vs-btn"        id="vs-longit"  onclick="setView('longit')">Longitudinal</button>
+        <button class="vs-btn"        id="vs-cutaway" onclick="setView('cutaway')">Cutaway</button>
+      </div>
+    </div>
+  </div>
+  <div class="hifi-main">
+    <div class="hifi-canvas-wrap">
+      <div class="hifi-view-label" id="hifi-vlabel">// FIG 2A — AXIAL CROSS-SECTION  ·  HIGH-FIDELITY ENGINEERING VIEW</div>
+      <canvas id="hifi-canvas" width="900" height="760"></canvas>
+      <div class="detail-row">
+        <div class="detail-card">
+          <div class="detail-card-title">// DETAIL A — Casimir Cavity Cross-Section</div>
+          <canvas class="detail-canvas" id="c-casimir" width="400" height="140"></canvas>
+        </div>
+        <div class="detail-card">
+          <div class="detail-card-title">// DETAIL B — Throat Oscillator Phase</div>
+          <canvas class="detail-canvas" id="c-osc" width="400" height="140"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="hifi-sidebar">
+      <div class="hs-section"><h3>// Structural Annotations</h3>
+        <div class="ann-item"><span class="ann-key" style="color:var(--teal)">①</span><div class="ann-text"><strong style="color:var(--teal)">Rotating Dense Matter Torus</strong>High-density toroid at spin parameter a≡J/Mc → M. Generates off-diagonal component g_tφ via T^tφ = (ρ+p)u^t u^φ ≠ 0. Primary frame-dragging source.<div class="ann-eq">T^tφ = (ρ+p)·u^t·u^φ</div></div></div>
+        <div class="ann-item"><span class="ann-key" style="color:var(--gold)">②</span><div class="ann-text"><strong style="color:var(--gold)">Ergosphere Boundary</strong>Surface g_tt = 0. Co-rotation mandatory. Frame drag ω equals local light speed limit. Torus interior fully within ergosphere at near-extremal spin.<div class="ann-eq">ω → Ω_H = a/(2Mr₊) at horizon</div></div></div>
+        <div class="ann-item"><span class="ann-key" style="color:var(--green)">③</span><div class="ann-text"><strong style="color:var(--green)">Coupling Zone (Kerr Interior)</strong>Region of maximal ω(r,θ). Kerr suppression factor √(1−a²/M²) → 0 as a→M. Rotation does stabilisation work; exotic matter cost → 0.<div class="ann-eq">|τ|_Kerr ~ (c²/G)·a₀⁻²·√(1−a²/M²)</div></div></div>
+        <div class="ann-item"><span class="ann-key" style="color:var(--purple)">④</span><div class="ann-text"><strong style="color:var(--purple)">Casimir Cavity Array</strong>Nested conducting shells, separation d ≪ 1μm. Casimir pressure produces controlled negative energy density. NEC violated: T_μν k^μk^ν = −ρ_ex−τ &lt; 0.<div class="ann-eq">P_Casimir = −π²ℏc / 240d⁴</div></div></div>
+        <div class="ann-item"><span class="ann-key" style="color:var(--red)">⑤</span><div class="ann-text"><strong style="color:var(--red)">Stabilised Throat (a₀)</strong>Wormhole throat at equilibrium radius a₀. Israel junction: [K_ij]−h_ij[K]=−8πG·S_ij. Perturbed: damped harmonic oscillator.<div class="ann-eq">δä + 2η_s·δȧ + (σ_throat/a₀²)·δa = 0</div></div></div>
+        <div class="ann-item"><span class="ann-key" style="color:var(--gold)">⑥</span><div class="ann-text"><strong style="color:var(--gold)">Spin Axis J</strong>Boyer–Lindquist z-axis. Lense–Thirring precession in surrounding spacetime. Frame drag falls as r⁻³ far from source.<div class="ann-eq">Ω_LT = GJ/c²r³·(3cos²θ−1)</div></div></div>
+        <div class="ann-item"><span class="ann-key" style="color:var(--sub)">⑦</span><div class="ann-text"><strong style="color:var(--text)">Spacetime Dragging Field Lines</strong>Dashed arcs show co-rotation at ω(r,θ). Line density indicates dragging strength. Maximal inside coupling zone.</div></div>
+        <div class="ann-item"><span class="ann-key" style="color:var(--sub)">⑧</span><div class="ann-text"><strong style="color:var(--text)">Coupling Stress-Energy</strong>Antisymmetric interaction between rotating matter and exotic shell. Chiral — depends on rotation handedness relative to null generators.<div class="ann-eq">T^μν_coupling ~ a·ρ_ex·ε^μναβ·u_α·k_β</div></div></div>
+      </div>
+      <div class="hs-section"><h3>// Dimensional Parameters</h3>
+        <table class="data-table">
+          <tr><td>R_torus</td><td>Major radius. Determines spatial extent of frame-dragging field.</td></tr>
+          <tr><td>r_tube</td><td>Minor radius (tube cross-section). Sets mass distribution and local Kerr parameter.</td></tr>
+          <tr><td>R_erg</td><td>Ergosphere radius. R_erg = M+√(M²−a²cos²θ) at equatorial plane.</td></tr>
+          <tr><td>R_cas</td><td>Outer radius of Casimir array. Must satisfy R_cas &lt; R_erg.</td></tr>
+          <tr><td>d_cas</td><td>Shell separation in Casimir array. d ≪ 1μm required for Casimir effect.</td></tr>
+          <tr><td>a₀</td><td>Throat equilibrium radius. Set by Israel junction balance condition.</td></tr>
+        </table>
+      </div>
+      <div class="hs-section"><h3>// Epistemic Tier Map</h3>
+        <p style="font-size:10px;color:var(--sub);line-height:1.8"><span style="color:var(--teal)">TIER I</span> — Kerr metric, Israel junction, Casimir effect, Boyer–Lindquist<br><span style="color:var(--gold)">TIER II</span> — Kerr suppression factor, throat oscillator, echo spectrum<br><span style="color:var(--purple)">TIER III</span> — Coupling tensor T^μν_coupling (schematic form)<br><span style="color:var(--red)">TIER IV</span> — GAP: no closed-form rotating exotic matter solution</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── TAB SWITCH ──
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='hifi'){setTimeout(startAnim,60);}else{stopAnim();}
+}
+
+// ── STATE ──
+const S={labels:true,dims:true,eqs:true,layers:{torus:true,coupling:true,casimir:true,throat:true},view:'axial'};
+let animId=null,frame=0,running=false;
+
+function toggle(trackId,textId,key){
+  S[key]=!S[key];
+  const tr=document.getElementById(trackId);
+  const tx=document.getElementById(textId);
+  tr.classList.toggle('on',S[key]);
+  tx.textContent=S[key]?'ON':'OFF';
+  tx.style.color=S[key]?'var(--teal)':'var(--sub)';
+}
+function toggleLabels(){toggle('label-track','label-text','labels');}
+function toggleDims(){toggle('dim-track','dim-text','dims');}
+function toggleEqs(){toggle('eq-track','eq-text','eqs');}
+function toggleLayer(k){
+  S.layers[k]=!S.layers[k];
+  document.getElementById('pill-'+k).classList.toggle('off',!S.layers[k]);
+}
+function setView(v){
+  S.view=v;
+  ['axial','longit','cutaway'].forEach(id=>document.getElementById('vs-'+id).classList.toggle('active',id===v));
+  const vl={'axial':'// FIG 2A — AXIAL CROSS-SECTION  ·  HIGH-FIDELITY ENGINEERING VIEW','longit':'// FIG 2B — LONGITUDINAL SECTION THROUGH SPIN AXIS','cutaway':'// FIG 2C — CUTAWAY PERSPECTIVE  ·  LAYER STRUCTURE REVEALED'};
+  document.getElementById('hifi-vlabel').textContent=vl[v];
+}
+
+function stopAnim(){if(animId){cancelAnimationFrame(animId);animId=null;running=false;}}
+function startAnim(){if(running)return;running=true;loop();}
+function loop(){frame=(frame+1)%3600;draw();animId=requestAnimationFrame(loop);}
+
+// ── COLOURS ──
+const CL={navy:'#0b1120',deep:'#0d1628',teal:'#00c8c8',gold:'#e8a020',red:'#e05050',purple:'#a070e0',green:'#40d080',dim:'#2a3f5a',text:'#c8daea',sub:'#6a8aaa'};
+function rgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
+
+// ── DRAW HELPERS ──
+function ln(ctx,x1,y1,x2,y2,c,w=1,d=[]){ctx.save();ctx.strokeStyle=c;ctx.lineWidth=w;ctx.setLineDash(d);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();}
+
+function dimLn(ctx,x1,y1,x2,y2,label,c){
+  if(!S.dims)return;
+  ctx.save();
+  ctx.strokeStyle=rgba(c,.45);ctx.lineWidth=0.8;ctx.setLineDash([3,3]);
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  const nx=-dy/len*14,ny=dx/len*14;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);ctx.lineTo(x1+nx,y1+ny);
+  ctx.moveTo(x2,y2);ctx.lineTo(x2+nx,y2+ny);
+  ctx.moveTo(x1+nx,y1+ny);ctx.lineTo(x2+nx,y2+ny);
+  ctx.stroke();
+  ctx.setLineDash([]);ctx.fillStyle=rgba(c,.8);ctx.font='10px Share Tech Mono';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(label,(x1+x2)/2+nx*1.8,(y1+y2)/2+ny*1.8);
+  ctx.restore();
+}
+
+function ldrBox(ctx,sx,sy,bx,by,title,body,c){
+  if(!S.labels)return;
+  ctx.save();
+  ctx.strokeStyle=rgba(c,.45);ctx.lineWidth=0.8;ctx.setLineDash([4,3]);
+  ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=c;ctx.beginPath();ctx.arc(sx,sy,3,0,Math.PI*2);ctx.fill();
+  const bw=155,bh=body?40:22,px=bx<450?bx-bw-4:bx+4,py=by-bh/2;
+  ctx.fillStyle=rgba(CL.deep,.93);ctx.strokeStyle=rgba(c,.6);ctx.lineWidth=0.8;
+  ctx.fillRect(px,py,bw,bh);ctx.strokeRect(px,py,bw,bh);
+  ctx.fillStyle=c;ctx.fillRect(px,py,2,bh);
+  ctx.fillStyle=c;ctx.font='bold 9px Share Tech Mono';ctx.textAlign='left';ctx.textBaseline='top';
+  ctx.fillText(title,px+8,py+5);
+  if(body){ctx.fillStyle=rgba(CL.text,.65);ctx.font='9px Share Tech Mono';ctx.fillText(body,px+8,py+20);}
+  ctx.restore();
+}
+
+function eqBx(ctx,x,y,lbl,eq,c){
+  if(!S.eqs)return;
+  ctx.save();
+  const w=215,h=36;
+  ctx.fillStyle=rgba(CL.navy,.95);ctx.strokeStyle=rgba(c,.5);ctx.lineWidth=0.8;
+  ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);
+  ctx.fillStyle=rgba(c,.55);ctx.font='8px Share Tech Mono';ctx.textAlign='left';ctx.textBaseline='top';
+  ctx.fillText(lbl,x+6,y+4);
+  ctx.fillStyle=CL.text;ctx.font='10px Share Tech Mono';ctx.fillText(eq,x+6,y+19);
+  ctx.restore();
+}
+
+function annC(ctx,x,y,num,c){
+  if(!S.labels)return;
+  ctx.save();
+  ctx.fillStyle=rgba(c,.2);ctx.strokeStyle=c;ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle=c;ctx.font='bold 10px Share Tech Mono';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(num,x,y);ctx.restore();
+}
+
+function corners(ctx,W,H){
+  [[0,0],[W,0],[0,H],[W,H]].forEach(([x,y])=>{
+    const dx=x===0?1:-1,dy=y===0?1:-1;
+    ctx.strokeStyle=rgba(CL.teal,.3);ctx.lineWidth=1;ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(x+dx*16,y);ctx.lineTo(x+dx*3,y);ctx.lineTo(x+dx*3,y+dy*16);ctx.moveTo(x,y+dy*16);ctx.lineTo(x,y+dy*3);ctx.lineTo(x+dx*16,y+dy*3);ctx.stroke();
+  });
+}
+
+function grid(ctx,W,H){
+  ctx.strokeStyle=rgba(CL.teal,.04);ctx.lineWidth=0.5;ctx.setLineDash([]);
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+}
+
+// ── MAIN DRAW ──
+function draw(){
+  const cv=document.getElementById('hifi-canvas');if(!cv)return;
+  const ctx=cv.getContext('2d');const W=cv.width,H=cv.height,cx=W/2,cy=H/2;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle=CL.navy;ctx.fillRect(0,0,W,H);
+  if(S.view==='axial')   axial(ctx,W,H,cx,cy);
+  if(S.view==='longit')  longit(ctx,W,H,cx,cy);
+  if(S.view==='cutaway') cutaway(ctx,W,H,cx,cy);
+  casimirDetail();oscDetail();
+}
+
+// ════ AXIAL ════
+function axial(ctx,W,H,cx,cy){
+  const t=frame*0.012;
+  grid(ctx,W,H);
+  ln(ctx,cx,20,cx,H-20,rgba(CL.dim,.4),0.8,[6,6]);
+  ln(ctx,20,cy,W-20,cy,rgba(CL.dim,.4),0.8,[6,6]);
+  if(S.labels){ctx.fillStyle=rgba(CL.sub,.55);ctx.font='10px Share Tech Mono';ctx.textAlign='center';ctx.fillText('z-AXIS (SPIN)',cx,13);ctx.textAlign='right';ctx.fillText('r-AXIS',W-10,cy-6);}
+
+  // L1 TORUS
+  if(S.layers.torus){
+    const Rm=185,rm=54;
+    // dragging arcs
+    for(let i=0;i<5;i++){
+      const r=Rm+rm+22+i*22;
+      ctx.save();ctx.strokeStyle=rgba(CL.teal,0.1-i*0.015);ctx.lineWidth=0.8;ctx.setLineDash([4,14+i*3]);
+      ctx.beginPath();ctx.arc(cx,cy,r,t*0.4+i,t*0.4+i+Math.PI*1.6);ctx.stroke();ctx.restore();
+    }
+    // lobes
+    [[cx-Rm,cy],[cx+Rm,cy],[cx,cy-Rm],[cx,cy+Rm]].forEach(([lx,ly],i)=>{
+      const g=ctx.createRadialGradient(lx-12,ly-12,0,lx,ly,rm);
+      g.addColorStop(0,'#1e3e60');g.addColorStop(1,'#0a1e3a');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(lx,ly,rm,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=CL.teal;ctx.lineWidth=1.5;ctx.setLineDash([]);
+      ctx.beginPath();ctx.arc(lx,ly,rm,0,Math.PI*2);ctx.stroke();
+      // hatch
+      ctx.save();ctx.beginPath();ctx.arc(lx,ly,rm,0,Math.PI*2);ctx.clip();
+      ctx.strokeStyle=rgba(CL.teal,.13);ctx.lineWidth=0.6;
+      for(let hx=lx-rm;hx<lx+rm;hx+=9){ctx.beginPath();ctx.moveTo(hx,ly-rm);ctx.lineTo(hx,ly+rm);ctx.stroke();}
+      // spin ring
+      ctx.strokeStyle=rgba(CL.teal,.22);ctx.lineWidth=0.9;ctx.setLineDash([6,6]);
+      ctx.translate(lx,ly);ctx.rotate(t*0.55);ctx.beginPath();ctx.arc(0,0,rm-9,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+    });
+    // ring outline
+    ctx.strokeStyle=rgba(CL.teal,.14);ctx.lineWidth=1;ctx.setLineDash([3,7]);
+    ctx.beginPath();ctx.arc(cx,cy,Rm,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    // rotation arrow on left lobe
+    ctx.save();ctx.strokeStyle=rgba(CL.teal,.9);ctx.lineWidth=1.4;ctx.fillStyle=CL.teal;
+    ctx.beginPath();ctx.arc(cx-Rm,cy,rm-6,-Math.PI/2,Math.PI/3,false);ctx.stroke();
+    const ang=Math.PI/3,ax=cx-Rm+(rm-6)*Math.cos(ang),ay=cy+(rm-6)*Math.sin(ang);
+    ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax-9*Math.cos(ang-1.3),ay-9*Math.sin(ang-1.3));ctx.lineTo(ax-9*Math.cos(ang+0.4),ay-9*Math.sin(ang+0.4));ctx.closePath();ctx.fill();
+    ctx.restore();
+    annC(ctx,cx-Rm+rm+14,cy-rm+12,'①',CL.teal);
+    ldrBox(ctx,cx-Rm,cy-rm-10,100,178,'① ROTATING TORUS','Dense matter  a→M  T^tφ≠0',CL.teal);
+    dimLn(ctx,cx,cy+Rm+72,cx-Rm,cy+Rm+72,'R_major',CL.teal);
+    dimLn(ctx,cx-Rm,cy,cx-Rm,cy-rm,'r_minor',CL.dim);
+    if(S.labels){
+      ctx.fillStyle=rgba(CL.gold,.7);ctx.font='bold 10px Share Tech Mono';ctx.textAlign='center';
+      ctx.fillText('↑ J',cx+10,38);
+    }
+    // spin axis
+    ctx.strokeStyle=CL.gold;ctx.lineWidth=1.5;ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(cx,H-32);ctx.lineTo(cx,30);ctx.stroke();
+    // arrow tips
+    ctx.fillStyle=CL.gold;
+    ctx.beginPath();ctx.moveTo(cx,28);ctx.lineTo(cx-5,40);ctx.lineTo(cx+5,40);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.moveTo(cx,H-30);ctx.lineTo(cx-5,H-42);ctx.lineTo(cx+5,H-42);ctx.closePath();ctx.fill();
+    if(S.labels){
+      ctx.font='9px Share Tech Mono';ctx.fillStyle=CL.gold;ctx.textAlign='left';ctx.fillText('J',cx+6,H-34);
+      ctx.fillText('J',cx+6,34);
+    }
+    annC(ctx,cx+8,60,'⑥',CL.gold);
+    eqBx(ctx,12,50,'// LENSE-THIRRING','Ω_LT = GJ/c²r³·(3cos²θ−1)',CL.gold);
+  }
+
+  // L2 COUPLING
+  if(S.layers.coupling){
+    const Re=138;
+    const eg=ctx.createRadialGradient(cx,cy,0,cx,cy,Re);
+    eg.addColorStop(0,rgba(CL.green,.0));eg.addColorStop(.7,rgba(CL.green,.07));eg.addColorStop(1,rgba(CL.green,.0));
+    ctx.fillStyle=eg;ctx.beginPath();ctx.arc(cx,cy,Re,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=rgba(CL.green,.45);ctx.lineWidth=1;ctx.setLineDash([7,5]);
+    ctx.beginPath();ctx.arc(cx,cy,Re,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    // animated field spirals
+    for(let i=0;i<5;i++){
+      const ph=t*0.45+i*Math.PI*2/5;
+      ctx.save();ctx.strokeStyle=rgba(CL.green,.15);ctx.lineWidth=0.7;ctx.setLineDash([3,9]);
+      ctx.beginPath();
+      for(let a=0;a<Math.PI*2;a+=0.06){
+        const r=28+(Re-36)*((a+ph)%(Math.PI*2))/(Math.PI*2);
+        const px=cx+r*Math.cos(a+ph*0.25),py=cy+r*Math.sin(a+ph*0.25);
+        a===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+      }
+      ctx.stroke();ctx.restore();
+    }
+    annC(ctx,cx+Re-14,cy-22,'③',CL.green);
+    ldrBox(ctx,cx+Re,cy,W-50,138,'③ COUPLING ZONE','ω(r,θ) max  Kerr suppressed',CL.green);
+    dimLn(ctx,cx,cy,cx+Re,cy,'R_erg',CL.green);
+    eqBx(ctx,W-232,90,'// KERR SUPPRESSION','|τ| ~ √(1 − a²/M²)',CL.gold);
+    annC(ctx,W-232+8,90+8,'⑧',CL.sub);
+    eqBx(ctx,W-232,135,'// COUPLING TENSOR','T_cpl ~ a·ρ_ex·ε^μναβ u_α k_β',CL.sub);
+  }
+
+  // L3 CASIMIR
+  if(S.layers.casimir){
+    const rr=[96,82,68,56,46];
+    // fill
+    const cg=ctx.createRadialGradient(cx,cy,rr[rr.length-1],cx,cy,rr[0]);
+    cg.addColorStop(0,rgba(CL.purple,.2));cg.addColorStop(1,rgba(CL.purple,.0));
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx,cy,rr[0],0,Math.PI*2);ctx.fill();
+    rr.forEach((r,i)=>{
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(-t*0.28);
+      ctx.strokeStyle=rgba(CL.purple,0.58-i*0.08);ctx.lineWidth=i===0?1.6:0.9;
+      ctx.setLineDash(i===0?[]:[4,5+i*2]);
+      ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();ctx.restore();
+    });
+    // plate hatch
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(-t*0.28);
+    ctx.strokeStyle=rgba(CL.purple,.12);ctx.lineWidth=0.6;ctx.setLineDash([]);
+    for(let a=-rr[0];a<rr[0];a+=10){const h=Math.sqrt(Math.max(0,rr[0]*rr[0]-a*a));ctx.beginPath();ctx.moveTo(a,-h);ctx.lineTo(a,h);ctx.stroke();}
+    ctx.restore();
+    annC(ctx,cx-rr[0]+10,cy+rr[0]-10,'④',CL.purple);
+    ldrBox(ctx,cx-rr[0]+2,cy+10,82,368,'④ CASIMIR ARRAY','NEC violated  ρ_ex<0  P~1/d⁴',CL.purple);
+    dimLn(ctx,cx,cy,cx-rr[0],cy,'R_cas',CL.purple);
+    eqBx(ctx,12,H-130,'// CASIMIR PRESSURE','P = −π²ℏc / 240d⁴',CL.purple);
+    if(S.labels){annC(ctx,12+8,H-130+8,'⑦',CL.sub);}
+  }
+
+  // L4 THROAT
+  if(S.layers.throat){
+    const a0=40,pulse=a0+3.5*Math.sin(t*2);
+    const tg=ctx.createRadialGradient(cx,cy,0,cx,cy,pulse+24);
+    tg.addColorStop(0,rgba(CL.purple,.78));tg.addColorStop(.5,rgba(CL.purple,.22));tg.addColorStop(1,rgba(CL.purple,.0));
+    ctx.fillStyle=tg;ctx.beginPath();ctx.arc(cx,cy,pulse+24,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#060314';ctx.beginPath();ctx.arc(cx,cy,a0-2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=CL.purple;ctx.lineWidth=2;ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(cx,cy,pulse,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle=rgba(CL.purple,.4);ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(cx,cy,a0-2,0,Math.PI*2);ctx.stroke();
+    if(S.labels){ctx.fillStyle=CL.purple;ctx.font='bold 8px Orbitron,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('THROAT',cx,cy);}
+    if(S.dims){
+      ln(ctx,cx,cy,cx+a0,cy,CL.purple,1);
+      ctx.fillStyle=CL.purple;ctx.beginPath();ctx.arc(cx,cy,2.5,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(cx+a0,cy,2.5,0,Math.PI*2);ctx.fill();
+      if(S.labels){ctx.fillStyle=CL.purple;ctx.font='11px Share Tech Mono';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('a₀',cx+5,cy-9);}
+    }
+    annC(ctx,cx+a0+20,cy-a0-12,'⑤',CL.red);
+    ldrBox(ctx,cx+a0+8,cy-a0,W-52,338,'⑤ THROAT  a₀','Israel junc.  δä+2η_sδȧ+ω₀²δa=0',CL.red);
+    eqBx(ctx,W-232,H-120,'// ECHO SPECTRUM (9b)','Ḣ(f)=A₀(f/f₀)²e^(−η_sf/f₀²)',CL.purple);
+  }
+
+  // Annotation ② ergosphere
+  if(S.labels&&S.layers.coupling){
+    const Re=138;
+    annC(ctx,cx+Re*0.7,cy-Re*0.7,'②',CL.gold);
+    ldrBox(ctx,cx+Re*0.72,cy-Re*0.72,W-52,80,'② ERGOSPHERE','g_tt=0  co-rotation mandatory',CL.gold);
+  }
+
+  corners(ctx,W,H);
+  if(S.labels){ctx.fillStyle=rgba(CL.sub,.45);ctx.font='9px Share Tech Mono';ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillText('NOT TO SCALE  |  GR GEOMETRY  |  BOYER–LINDQUIST COORDS',W-12,H-8);}
+}
+
+// ════ LONGITUDINAL ════
+function longit(ctx,W,H,cx,cy){
+  const t=frame*0.012;
+  grid(ctx,W,H);
+  ln(ctx,20,cy,W-20,cy,rgba(CL.gold,.4),1,[6,6]);
+  ctx.fillStyle=CL.gold;ctx.font='bold 11px Share Tech Mono';ctx.textAlign='left';
+  ctx.fillText('→ SPIN AXIS  J',26,cy-9);
+  ctx.beginPath();ctx.moveTo(26,cy);ctx.lineTo(80,cy);ctx.stroke();
+  ctx.fillStyle=CL.gold;ctx.beginPath();ctx.moveTo(82,cy);ctx.lineTo(72,cy-4);ctx.lineTo(72,cy+4);ctx.closePath();ctx.fill();
+
+  if(S.layers.torus){
+    const tr=54,sp=188;
+    [-1,1].forEach(side=>{
+      const tx=cx+side*sp;
+      const tg=ctx.createRadialGradient(tx-12,cy-12,0,tx,cy,tr);
+      tg.addColorStop(0,'#1e3e60');tg.addColorStop(1,'#0a1e3a');
+      ctx.fillStyle=tg;ctx.beginPath();ctx.arc(tx,cy,tr,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=CL.teal;ctx.lineWidth=1.5;ctx.setLineDash([]);
+      ctx.beginPath();ctx.arc(tx,cy,tr,0,Math.PI*2);ctx.stroke();
+      ctx.save();ctx.beginPath();ctx.arc(tx,cy,tr,0,Math.PI*2);ctx.clip();
+      ctx.strokeStyle=rgba(CL.teal,.12);ctx.lineWidth=0.6;
+      for(let hx=tx-tr;hx<tx+tr;hx+=9){ctx.beginPath();ctx.moveTo(hx,cy-tr);ctx.lineTo(hx,cy+tr);ctx.stroke();}
+      ctx.restore();
+      ctx.strokeStyle=rgba(CL.teal,.8);ctx.lineWidth=1.2;ctx.setLineDash([]);
+      ctx.beginPath();ctx.arc(tx,cy,tr-8,-Math.PI/2,Math.PI/2,side<0);ctx.stroke();
+      ctx.fillStyle=CL.teal;
+      const aang=side<0?Math.PI/2:-Math.PI/2,aax=tx+(tr-8)*Math.cos(aang),aay=cy+(tr-8)*Math.sin(aang);
+      ctx.beginPath();ctx.moveTo(aax,aay);ctx.lineTo(aax-8*Math.cos(aang-1.2*side),aay-8*Math.sin(aang-1.2*side));ctx.lineTo(aax-8*Math.cos(aang+0.4*side),aay-8*Math.sin(aang+0.4*side));ctx.closePath();ctx.fill();
+      if(S.labels){ctx.fillStyle=rgba(CL.teal,.8);ctx.font='9px Share Tech Mono';ctx.textAlign='center';ctx.fillText(side<0?'←Ω':'Ω→',tx,cy+tr+16);}
+    });
+    ln(ctx,cx-sp+tr,cy-tr,cx+sp-tr,cy-tr,rgba(CL.teal,.22),1,[4,4]);
+    ln(ctx,cx-sp+tr,cy+tr,cx+sp-tr,cy+tr,rgba(CL.teal,.22),1,[4,4]);
+    ldrBox(ctx,cx-sp,cy-tr-8,90,175,'① TORUS LOBE','Spin axis aligned  a→M',CL.teal);
+    dimLn(ctx,cx-sp-tr,cy+tr+44,cx+sp+tr,cy+tr+44,'2·R_total',CL.teal);
+    dimLn(ctx,cx-sp-tr,cy,cx-sp-tr,cy-tr,'r_min',CL.dim);
+  }
+  if(S.layers.coupling){
+    const Re=138;
+    const eg=ctx.createRadialGradient(cx,cy,0,cx,cy,Re);
+    eg.addColorStop(0,rgba(CL.green,.0));eg.addColorStop(.7,rgba(CL.green,.06));eg.addColorStop(1,rgba(CL.green,.0));
+    ctx.fillStyle=eg;ctx.beginPath();ctx.arc(cx,cy,Re,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=rgba(CL.green,.4);ctx.lineWidth=1;ctx.setLineDash([7,5]);
+    ctx.beginPath();ctx.arc(cx,cy,Re,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ldrBox(ctx,cx+Re,cy-20,W-42,195,'③ COUPLING ZONE','Max ω(r,θ)  ergosphere interior',CL.green);
+    dimLn(ctx,cx,cy,cx,cy-Re,'R_erg',CL.green);
+    eqBx(ctx,12,H-80,'// KERR SUPPRESSION','|τ|~(c²/G)·a₀⁻²·√(1−a²/M²)',CL.gold);
+  }
+  if(S.layers.casimir){
+    const rr=[96,82,68,56];
+    const cg=ctx.createRadialGradient(cx,cy,rr[3],cx,cy,rr[0]);
+    cg.addColorStop(0,rgba(CL.purple,.2));cg.addColorStop(1,rgba(CL.purple,.0));
+    ctx.fillStyle=cg;ctx.beginPath();ctx.arc(cx,cy,rr[0],0,Math.PI*2);ctx.fill();
+    rr.forEach((r,i)=>{
+      ctx.save();ctx.translate(cx,cy);ctx.rotate(-t*0.2);
+      ctx.strokeStyle=rgba(CL.purple,0.55-i*0.08);ctx.lineWidth=i===0?1.5:0.9;
+      ctx.setLineDash(i===0?[]:[4,5+i*2]);
+      ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();ctx.restore();
+    });
+    ldrBox(ctx,cx-rr[0]-2,cy+10,74,355,'④ CASIMIR ARRAY','d≪1μm  P_cas=−π²ℏc/240d⁴',CL.purple);
+    dimLn(ctx,cx,cy,cx-rr[0],cy,'R_cas',CL.purple);
+  }
+  if(S.layers.throat){
+    const a0=40,pulse=a0+3.5*Math.sin(frame*0.024);
+    const tg=ctx.createRadialGradient(cx,cy,0,cx,cy,pulse+24);
+    tg.addColorStop(0,rgba(CL.purple,.78));tg.addColorStop(.5,rgba(CL.purple,.22));tg.addColorStop(1,rgba(CL.purple,.0));
+    ctx.fillStyle=tg;ctx.beginPath();ctx.arc(cx,cy,pulse+24,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#060314';ctx.beginPath();ctx.arc(cx,cy,a0-2,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=CL.purple;ctx.lineWidth=2;ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(cx,cy,pulse,0,Math.PI*2);ctx.stroke();
+    if(S.labels){ctx.fillStyle=CL.purple;ctx.font='bold 8px Orbitron,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('THROAT',cx,cy);}
+    if(S.dims){
+      ln(ctx,cx,cy,cx+a0,cy,CL.purple,1);
+      ctx.fillStyle=CL.purple;ctx.beginPath();ctx.arc(cx+a0,cy,2.5,0,Math.PI*2);ctx.fill();
+      if(S.labels){ctx.fillStyle=CL.purple;ctx.font='11px Share Tech Mono';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('a₀',cx+5,cy-9);}
+    }
+    ldrBox(ctx,cx+a0+8,cy-a0,W-52,310,'⑤ THROAT  a₀','σ_throat  η_s  oscillation',CL.red);
+  }
+  corners(ctx,W,H);
+  if(S.labels){ctx.fillStyle=rgba(CL.sub,.45);ctx.font='9px Share Tech Mono';ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillText('NOT TO SCALE  |  LONGITUDINAL SECTION  |  SPIN AXIS HORIZONTAL',W-12,H-8);}
+}
+
+// ════ CUTAWAY ════
+function cutaway(ctx,W,H,cx,cy){
+  const t=frame*0.012;
+  grid(ctx,W,H);
+  ln(ctx,cx,20,cx,H-20,rgba(CL.gold,.2),0.8,[4,4]);
+  if(S.labels){ctx.fillStyle=rgba(CL.gold,.45);ctx.font='9px Share Tech Mono';ctx.textAlign='center';ctx.fillText('CUT PLANE',cx,16);}
+
+  const layers=[
+    {key:'torus',   R:185,c:CL.teal,   a:.7, lbl:'L1 TORUS',   n:'①'},
+    {key:'coupling',R:138,c:CL.green,  a:.4, lbl:'L2 ERGOSPHERE',n:'③'},
+    {key:'casimir', R:96, c:CL.purple, a:.6, lbl:'L3 CASIMIR',  n:'④'},
+    {key:'throat',  R:40, c:CL.red,    a:.9, lbl:'L4 THROAT',   n:'⑤'},
+  ];
+
+  layers.forEach(({key,R,c,a,lbl,n},i)=>{
+    if(!S.layers[key])return;
+    // right half (solid)
+    ctx.save();
+    ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,Math.PI/2);ctx.lineTo(cx,cy);ctx.closePath();
+    ctx.fillStyle=rgba(c,a*0.15);ctx.fill();
+    ctx.strokeStyle=rgba(c,a*0.75);ctx.lineWidth=key==='throat'?2:1.3;ctx.setLineDash([]);ctx.stroke();
+    ctx.restore();
+    // left half (ghost)
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,Math.PI/2,Math.PI*3/2);
+    ctx.strokeStyle=rgba(c,a*0.3);ctx.lineWidth=0.8;ctx.setLineDash([3,5]);ctx.stroke();ctx.restore();
+    // cut face ellipse
+    ctx.save();ctx.beginPath();ctx.ellipse(cx,cy,3,R,0,0,Math.PI*2);
+    ctx.fillStyle=rgba(c,0.1);ctx.strokeStyle=rgba(c,0.55);ctx.lineWidth=1;ctx.setLineDash([]);
+    ctx.fill();ctx.stroke();ctx.restore();
+    // label on right
+    if(S.labels){
+      const lx=cx+R+12,ly=cy-(R*0.28);
+      ctx.fillStyle=rgba(c,.85);ctx.font='bold 9px Share Tech Mono';ctx.textAlign='left';
+      ctx.fillText(`${n} ${lbl}`,lx+4,ly);
+      ln(ctx,cx+R,cy,lx+2,ly-3,rgba(c,.4),0.7,[3,3]);
+      ctx.fillStyle=c;ctx.beginPath();ctx.arc(cx+R,cy,2,0,Math.PI*2);ctx.fill();
+    }
+  });
+
+  // Internal field lines on left (cut side)
+  if(S.layers.coupling){
+    for(let i=0;i<6;i++){
+      const r=22+106*(i/5);
+      ctx.save();ctx.strokeStyle=rgba(CL.green,0.13);ctx.lineWidth=0.8;ctx.setLineDash([3,8]);
+      ctx.beginPath();ctx.arc(cx,cy,r,Math.PI/2,Math.PI*3/2,false);ctx.stroke();ctx.restore();
+    }
+  }
+
+  // Casimir plates visible in cut
+  if(S.layers.casimir){
+    for(let i=0;i<6;i++){
+      const yr=cy-(30+i*12);
+      const xr=cx-Math.sqrt(Math.max(0,96*96-(yr-cy)*(yr-cy)));
+      ctx.strokeStyle=rgba(CL.purple,.28+i*.05);ctx.lineWidth=0.9;ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(cx,yr);ctx.lineTo(xr,yr);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,2*cy-yr);ctx.lineTo(xr,2*cy-yr);ctx.stroke();
+    }
+  }
+
+  // Throat pulse
+  if(S.layers.throat){
+    const a0=40,pulse=a0+3.5*Math.sin(t*2);
+    const tg=ctx.createRadialGradient(cx,cy,0,cx,cy,pulse+24);
+    tg.addColorStop(0,rgba(CL.purple,.8));tg.addColorStop(.5,rgba(CL.purple,.3));tg.addColorStop(1,rgba(CL.purple,.0));
+    ctx.fillStyle=tg;ctx.beginPath();ctx.arc(cx,cy,pulse+24,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#060314';ctx.beginPath();ctx.arc(cx,cy,38,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle=CL.purple;ctx.lineWidth=2;ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(cx,cy,pulse,0,Math.PI*2);ctx.stroke();
+    if(S.labels){ctx.fillStyle=CL.purple;ctx.font='bold 8px Orbitron,monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('THROAT',cx,cy);}
+    if(S.dims){ln(ctx,cx,cy,cx+a0,cy,CL.purple,1);ctx.fillStyle=CL.purple;ctx.beginPath();ctx.arc(cx+a0,cy,2.5,0,Math.PI*2);ctx.fill();if(S.labels){ctx.fillStyle=CL.purple;ctx.font='11px Share Tech Mono';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('a₀',cx+5,cy-9);}}
+  }
+
+  if(S.eqs){
+    eqBx(ctx,12,H-120,'// ISRAEL JUNCTION','[K_ij]−h_ij[K] = −8πG·S_ij',CL.teal);
+    eqBx(ctx,12,H-78,'// THROAT OSCILLATOR','δä+2η_s·δȧ+(σ/a₀²)·δa = 0',CL.purple);
+    eqBx(ctx,W-232,H-78,'// ECHO SPECTRUM 9b','Ḣ(f)=A₀·(f/f₀)²·e^(−η_sf/f₀²)',CL.gold);
+  }
+  corners(ctx,W,H);
+  if(S.labels){ctx.fillStyle=rgba(CL.sub,.45);ctx.font='9px Share Tech Mono';ctx.textAlign='right';ctx.textBaseline='alphabetic';ctx.fillText('NOT TO SCALE  |  CUTAWAY VIEW  |  LEFT HALF REMOVED',W-12,H-8);}
+}
+
+// ════ DETAIL A: CASIMIR ════
+function casimirDetail(){
+  const cv=document.getElementById('c-casimir');if(!cv)return;
+  const ctx=cv.getContext('2d');const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle=CL.navy;ctx.fillRect(0,0,W,H);
+  const t=frame*0.012;
+  const plates=8,sp=38,sx=22,ht=78;
+  for(let i=0;i<plates;i++){
+    const x=sx+i*sp;
+    ctx.fillStyle=rgba(CL.purple,.65+Math.sin(t+i)*0.1);
+    ctx.fillRect(x-2,H/2-ht/2,4,ht);
+    ctx.strokeStyle=CL.purple;ctx.lineWidth=0.8;ctx.setLineDash([]);
+    ctx.strokeRect(x-2,H/2-ht/2,4,ht);
+    ctx.save();ctx.beginPath();ctx.rect(x-2,H/2-ht/2,4,ht);ctx.clip();
+    ctx.strokeStyle=rgba(CL.purple,.4);ctx.lineWidth=0.6;
+    for(let hy=H/2-ht/2;hy<H/2+ht/2;hy+=5){ctx.beginPath();ctx.moveTo(x-4,hy);ctx.lineTo(x+4,hy);ctx.stroke();}
+    ctx.restore();
+    if(i<plates-1){
+      const gg=ctx.createLinearGradient(x+2,H/2,x+sp-2,H/2);
+      gg.addColorStop(0,rgba(CL.purple,.0));gg.addColorStop(.5,rgba(CL.purple,.18));gg.addColorStop(1,rgba(CL.purple,.0));
+      ctx.fillStyle=gg;ctx.fillRect(x+2,H/2-ht/2+5,sp-4,ht-10);
+      if(S.dims&&i===3){dimLn(ctx,x+2,H/2+ht/2+12,x+sp-2,H/2+ht/2+12,'d ≪ 1μm',CL.purple);}
+    }
+    if(S.labels&&i===0){ctx.fillStyle=rgba(CL.purple,.7);ctx.font='8px Share Tech Mono';ctx.textAlign='center';ctx.fillText('CONDUCTOR',x,H/2-ht/2-6);}
+  }
+  if(S.labels){
+    const mid=sx+plates*sp/2;
+    ctx.fillStyle=rgba(CL.purple,.6);ctx.font='8px Share Tech Mono';ctx.textAlign='center';
+    ctx.fillText('← Casimir attraction (negative energy density in gap) →',mid,H-5);
+  }
+  if(S.eqs){ctx.fillStyle=rgba(CL.purple,.75);ctx.font='9px Share Tech Mono';ctx.textAlign='right';ctx.fillText('P = −π²ℏc / 240d⁴',W-6,13);}
+}
+
+// ════ DETAIL B: OSCILLATOR ════
+function oscDetail(){
+  const cv=document.getElementById('c-osc');if(!cv)return;
+  const ctx=cv.getContext('2d');const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);ctx.fillStyle=CL.navy;ctx.fillRect(0,0,W,H);
+  const eta=0.15,w0=1.0,wd=Math.sqrt(Math.max(0,w0*w0-eta*eta));
+  const pL=32,pR=16,pT=16,pB=28;
+  const pW=W-pL-pR,pH=H-pT-pB;
+  const ox=pL,oy=pT+pH/2;
+  ln(ctx,ox,pT,ox,pT+pH,rgba(CL.dim,.6),0.8);
+  ln(ctx,ox,oy,ox+pW,oy,rgba(CL.dim,.6),0.8);
+  if(S.labels){ctx.fillStyle=rgba(CL.sub,.6);ctx.font='8px Share Tech Mono';ctx.textAlign='center';ctx.fillText('time →',ox+pW-12,oy+14);ctx.textAlign='right';ctx.fillText('δa(t)',ox-4,pT+8);}
+  // grid lines
+  ctx.strokeStyle=rgba(CL.dim,.2);ctx.lineWidth=0.5;ctx.setLineDash([3,4]);
+  for(let i=1;i<4;i++){const x=ox+i*pW/4;ctx.beginPath();ctx.moveTo(x,pT);ctx.lineTo(x,pT+pH);ctx.stroke();}
+  ctx.setLineDash([]);
+  // envelope
+  ctx.strokeStyle=rgba(CL.gold,.35);ctx.lineWidth=1;ctx.setLineDash([3,4]);
+  ctx.beginPath();for(let i=0;i<300;i++){const tt=i/300*14,env=Math.exp(-eta*tt),x=ox+i/300*pW,y=oy-env*(pH/2-5);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+  ctx.beginPath();for(let i=0;i<300;i++){const tt=i/300*14,env=-Math.exp(-eta*tt),x=ox+i/300*pW,y=oy-env*(pH/2-5);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+  ctx.setLineDash([]);
+  // oscillation
+  ctx.strokeStyle=CL.purple;ctx.lineWidth=1.5;
+  ctx.beginPath();for(let i=0;i<300;i++){const tt=i/300*14,v=Math.exp(-eta*tt)*Math.cos(wd*tt),x=ox+i/300*pW,y=oy-v*(pH/2-5);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+  // animated dot
+  const nowT=(frame*0.012*0.55)%14;
+  const nowV=Math.exp(-eta*nowT)*Math.cos(wd*nowT);
+  const dx=ox+(nowT/14)*pW,dy=oy-nowV*(pH/2-5);
+  const dg=ctx.createRadialGradient(dx,dy,0,dx,dy,7);
+  dg.addColorStop(0,rgba(CL.purple,1));dg.addColorStop(1,rgba(CL.purple,0));
+  ctx.fillStyle=dg;ctx.beginPath();ctx.arc(dx,dy,7,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=CL.purple;ctx.beginPath();ctx.arc(dx,dy,2.5,0,Math.PI*2);ctx.fill();
+  if(S.labels){
+    ctx.fillStyle=rgba(CL.gold,.6);ctx.font='8px Share Tech Mono';ctx.textAlign='left';ctx.fillText('exp(−η_s·t) envelope',ox+4,pT+11);
+    ctx.fillStyle=rgba(CL.purple,.8);ctx.fillText('δa(t) throat oscillation',ox+4,pT+23);
+  }
+  if(S.eqs){ctx.fillStyle=rgba(CL.purple,.7);ctx.font='8px Share Tech Mono';ctx.textAlign='right';ctx.fillText('δä + 2η_s δȧ + ω₀²δa = 0',W-6,H-5);}
+}
+
+window.addEventListener('load',()=>{casimirDetail();oscDetail();});
+</script>
+</body>
+</html>
