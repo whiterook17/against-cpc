@@ -1,0 +1,84 @@
+/* ============================================================
+   AGAINST CPC — Global Design System
+   All colours via CSS variables. Never hardcode hex in components.
+   ============================================================ */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&family=Share+Tech+Mono&display=swap');
+
+/* ── Palette ─────────────────────────────────────────────── */
+:root {
+  --navy:   #0b1120;   /* primary background */
+  --deep:   #0d1628;   /* panels, header */
+  --panel:  #111e36;   /* cards, sidebars */
+  --teal:   #00c8c8;   /* Tier I / L1 Torus / confirmed */
+  --gold:   #e8a020;   /* Tier II / Kerr suppression / gold */
+  --red:    #e05050;   /* Tier IV / gaps / throat */
+  --purple: #a070e0;   /* Tier III / exotic matter / Casimir */
+  --green:  #40d080;   /* coupling zone / confirmed results */
+  --dim:    #2a3f5a;   /* borders, dividers */
+  --text:   #c8daea;   /* primary text */
+  --sub:    #6a8aaa;   /* secondary text, labels */
+
+  /* Derived faint variants */
+  --teal-faint:   rgba(0, 200, 200, 0.08);
+  --gold-faint:   rgba(232, 160, 32, 0.08);
+  --purple-faint: rgba(160, 112, 224, 0.08);
+  --red-faint:    rgba(224, 80, 80, 0.08);
+
+  /* ── Typography ─────────────────────────────────────────── */
+  --font-display: 'Orbitron', monospace;     /* headings, labels, UI elements */
+  --font-body:    'Exo 2', sans-serif;        /* prose, paper text */
+  --font-mono:    'Share Tech Mono', monospace; /* equations, code, data readouts */
+}
+
+/* ── Reset ───────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--navy);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  padding: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--teal);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ── Accessibility ───────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── Reduced Motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Pause canvas / CSS animations when OS preference is set */
+  .spin-torus, .spin-field, .spin-inner, .pulse-throat {
+    animation-play-state: paused;
+  }
+}

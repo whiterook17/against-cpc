@@ -1,3 +1,11 @@
+## Project Configuration
+
+- **Language**: TypeScript
+- **Package Manager**: npm
+- **Add-ons**: eslint, prettier
+
+---
+
 # AGAINST CHRONOLOGY PROTECTION — Research Website
 ## Project Instruction File for Claude
 ### Version 2.0 — April 2026

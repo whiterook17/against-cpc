@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".svelte-kit/output",
+  "framework": "sveltekit",
+  "rewrites": [
+    { "source": "/paper",                   "destination": "/paper" },
+    { "source": "/construct",               "destination": "/construct" },
+    { "source": "/construct/simulator",     "destination": "/construct/simulator" },
+    { "source": "/construct/parameter-lab", "destination": "/construct/parameter-lab" },
+    { "source": "/discuss",                 "destination": "/discuss" }
+  ]
+}
