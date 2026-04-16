@@ -1858,32 +1858,34 @@ export const gapCounts = derived(comments, ($comments) => {
 ### +layout.svelte — Global Layout with GSAP Page Transitions
 ```svelte
 <!-- src/routes/+layout.svelte -->
-<script>
-  import { onMount }        from 'svelte';
-  import { page }           from '$app/stores';
-  import { gsap }           from 'gsap';
-  import { ScrollTrigger }  from 'gsap/ScrollTrigger';
-  import Nav                from '$lib/components/Nav.svelte';
+<script lang="ts">
+  import '../app.css';
+  import { page } from '$app/stores';
+  import { gsap } from 'gsap';
+  import { browser } from '$app/environment';
+  import Nav from '$lib/components/Nav.svelte';
 
-  let main;
+  let { children } = $props();
+  let main: HTMLElement | null = $state(null);
 
-  onMount(() => {
-    gsap.registerPlugin(ScrollTrigger);
-  });
-
-  // Animate in on route change
-  $: if (main && $page.url.pathname) {
-    gsap.fromTo(main,
+  $effect(() => {
+    // Trigger re-animation on route change
+    void $page.url.pathname;
+    if (!browser || !main) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+    gsap.fromTo(
+      main,
       { opacity: 0, y: 12 },
       { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out' }
     );
-  }
+  });
 </script>
 
 <Nav />
 
 <main bind:this={main}>
-  <slot />
+  {@render children()}
 </main>
 
 <style>
@@ -1893,33 +1895,31 @@ export const gapCounts = derived(comments, ($comments) => {
   }
 </style>
 ```
-
----
-
-### Nav.svelte — Global Navigation Component
+<!-- src/lib/components/Nav.svelte -->
 ```svelte
 <!-- src/lib/components/Nav.svelte -->
-<script>
-  import { page }        from '$app/stores';
+<script lang="ts">
+  import { page } from '$app/stores';
   import { mobileNavOpen } from '$lib/stores/ui.js';
-  import { gsap }        from 'gsap';
+  import { gsap } from 'gsap';
+  import { browser } from '$app/environment';
 
   const links = [
-    { href: '/',                  label: 'Overview' },
-    { href: '/paper',             label: 'The Paper' },
-    { href: '/construct',         label: 'Construct' },
-    { href: '/construct/simulator',  label: 'Simulator' },
-    { href: '/discuss',           label: 'Discuss' },
+    { href: '/',                       label: 'Overview' },
+    { href: '/paper',                  label: 'The Paper' },
+    { href: '/construct',              label: 'Construct' },
+    { href: '/construct/simulator',    label: 'Simulator' },
+    { href: '/discuss',                label: 'Discuss' }
   ];
 
-  function isActive(href) {
+  function isActive(href: string) {
     return $page.url.pathname === href ||
            ($page.url.pathname.startsWith(href) && href !== '/');
   }
 
-  let hamburger;
   function toggleMobile() {
-    mobileNavOpen.update(v => !v);
+    mobileNavOpen.update((v) => !v);
+    if (!browser) return;
     gsap.to('.mobile-menu', {
       height: $mobileNavOpen ? 'auto' : 0,
       opacity: $mobileNavOpen ? 1 : 0,
@@ -1935,7 +1935,6 @@ export const gapCounts = derived(comments, ($comments) => {
     <span class="brand-sub">Danny · 2026</span>
   </div>
 
-  <!-- Desktop links -->
   <nav class="nav-links">
     {#each links as { href, label }}
       <a {href} class="nav-link" class:active={isActive(href)}>
@@ -1946,18 +1945,23 @@ export const gapCounts = derived(comments, ($comments) => {
 
   <span class="nav-badge">THEORETICAL</span>
 
-  <!-- Mobile hamburger -->
-  <button class="hamburger" bind:this={hamburger} on:click={toggleMobile}
-    aria-label="Toggle navigation menu">
+  <button
+    class="hamburger"
+    onclick={toggleMobile}
+    aria-label="Toggle navigation menu"
+  >
     <span></span><span></span><span></span>
   </button>
 </header>
 
-<!-- Mobile dropdown -->
 <div class="mobile-menu" style="height:0;overflow:hidden;opacity:0">
   {#each links as { href, label }}
-    <a {href} class="mobile-link" class:active={isActive(href)}
-       on:click={() => mobileNavOpen.set(false)}>
+    
+      {href}
+      class="mobile-link"
+      class:active={isActive(href)}
+      onclick={() => mobileNavOpen.set(false)}
+    >
       {label}
     </a>
   {/each}
@@ -1984,9 +1988,7 @@ export const gapCounts = derived(comments, ($comments) => {
     font-size: 10px; color: var(--sub);
     margin-left: 12px;
   }
-  .nav-links {
-    display: flex; gap: 4px; margin-left: 24px;
-  }
+  .nav-links { display: flex; gap: 4px; margin-left: 24px; }
   .nav-link {
     font-family: var(--font-mono);
     font-size: 11px; letter-spacing: 1px;
@@ -1995,8 +1997,8 @@ export const gapCounts = derived(comments, ($comments) => {
     text-transform: uppercase;
     transition: color .15s, background .15s;
   }
-  .nav-link:hover { color: var(--text); background: rgba(0,200,200,.06); }
-  .nav-link.active { color: var(--teal); background: rgba(0,200,200,.1); }
+  .nav-link:hover { color: var(--text); background: rgba(0, 200, 200, 0.06); }
+  .nav-link.active { color: var(--teal); background: rgba(0, 200, 200, 0.1); }
   .nav-badge {
     margin-left: auto;
     font-family: var(--font-mono); font-size: 10px;
@@ -2027,7 +2029,7 @@ export const gapCounts = derived(comments, ($comments) => {
     .nav-badge  { display: none; }
   }
 </style>
-```
+``````
 
 ---
 
