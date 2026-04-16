@@ -1,6 +1,9 @@
-<!-- src/routes/paper/+page.svelte — Phase 2A: Abstract, §1–§5 with SSR KaTeX -->
+<!-- src/routes/paper/+page.svelte — Phase 2B: complete paper §1–§10 + References -->
 <script lang="ts">
   import 'katex/dist/katex.min.css';
+
+  import { browser } from '$app/environment';
+  import { gsap }    from 'gsap';
 
   import SectionNavigator from '$lib/components/SectionNavigator.svelte';
   import PaperTools       from '$lib/components/PaperTools.svelte';
@@ -11,11 +14,17 @@
   import DataTable        from '$lib/components/DataTable.svelte';
 
   const SECTIONS = [
-    { id: 'sec-1', number: '1', title: 'Introduction' },
-    { id: 'sec-2', number: '2', title: "Hawking's CPC: Statement and Scope" },
-    { id: 'sec-3', number: '3', title: 'Gap I — Ford–Roman Quantum Inequality' },
-    { id: 'sec-4', number: '4', title: 'Gap II — KRW Theorem' },
-    { id: 'sec-5', number: '5', title: 'Combined Gravitational System' },
+    { id: 'sec-1',    number: '1',   title: 'Introduction' },
+    { id: 'sec-2',    number: '2',   title: "Hawking's CPC: Statement and Scope" },
+    { id: 'sec-3',    number: '3',   title: 'Gap I — Ford–Roman Quantum Inequality' },
+    { id: 'sec-4',    number: '4',   title: 'Gap II — KRW Theorem' },
+    { id: 'sec-5',    number: '5',   title: 'Combined Gravitational System' },
+    { id: 'sec-6',    number: '6',   title: 'Dynamic Throat Model & GW Echoes' },
+    { id: 'sec-7',    number: '7',   title: 'Landauer–Deutsch Bound' },
+    { id: 'sec-8',    number: '8',   title: 'Observational Roadmap' },
+    { id: 'sec-9',    number: '9',   title: 'Historical & Theological Coda' },
+    { id: 'sec-10',   number: '10',  title: 'Conclusion' },
+    { id: 'sec-refs', number: 'Ref', title: 'References' },
   ];
 
   const KRW_HEADERS = ['Spacetime Type', 'Horizon Type', 'KRW Applies?'];
@@ -45,6 +54,62 @@
       'Membrane shear viscosity — controls how fast throat oscillations decay; sets echo damping rate',
     ],
   ];
+
+  const DAMPING_HEADERS = ['Regime', 'Condition', 'Physical Outcome'];
+  const DAMPING_ROWS = [
+    [
+      'Underdamped',
+      'η_s² < σ_throat / a₀²',
+      'Throat oscillates with decaying amplitude — produces a sequence of GW echoes',
+    ],
+    [
+      'Critically damped',
+      'η_s² = σ_throat / a₀²',
+      'Fastest return to equilibrium with no oscillation — single echo pulse',
+    ],
+    [
+      'Overdamped',
+      'η_s² > σ_throat / a₀²',
+      'Slow exponential return — echoes too widely spaced to distinguish',
+    ],
+  ];
+
+  // Mobile tools strip state (mirrors PaperTools sidebar; the sidebar is hidden on small screens)
+  const bibtex = `@unpublished{danny2026cpc,
+  author  = {Danny},
+  title   = {Against Chronology Protection: On the Insufficiency of Hawking's 1992 Conjecture},
+  year    = {2026},
+  month   = {April},
+  note    = {Independent research. Available at againstcpc.com}
+}`;
+  let stripCopiedBib = $state(false);
+  let stripCopiedUrl = $state(false);
+
+  function stripPulse(el: HTMLElement) {
+    gsap.fromTo(el, { scale: 1 }, { scale: 1.06, duration: 0.1, yoyo: true, repeat: 1 });
+  }
+  function stripCopyBib(e: MouseEvent) {
+    if (!browser) return;
+    navigator.clipboard.writeText(bibtex).then(() => {
+      stripCopiedBib = true;
+      stripPulse(e.currentTarget as HTMLElement);
+      setTimeout(() => (stripCopiedBib = false), 2000);
+    });
+  }
+  function stripCopyUrl(e: MouseEvent) {
+    if (!browser) return;
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      stripCopiedUrl = true;
+      stripPulse(e.currentTarget as HTMLElement);
+      setTimeout(() => (stripCopiedUrl = false), 2000);
+    });
+  }
+
+  function mobileNavJump(e: Event) {
+    if (!browser) return;
+    const id = (e.target as HTMLSelectElement).value;
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 </script>
 
 <svelte:head>
@@ -64,6 +129,28 @@
 
   <!-- Centre: paper content -->
   <main class="paper-main">
+
+    <!-- ── Mobile nav select (hidden ≥768px via CSS) ─────── -->
+    <div class="mobile-nav-wrap">
+      <select class="mobile-nav-select" onchange={mobileNavJump} aria-label="Jump to section">
+        <option value="" disabled selected>Jump to section…</option>
+        {#each SECTIONS as { id, number, title }}
+          <option value={id}>§{number} — {title}</option>
+        {/each}
+      </select>
+    </div>
+
+    <!-- ── Condensed tools strip (hidden ≥1024px via CSS) ── -->
+    <div class="paper-tools-strip">
+      <a href="/downloads/against-cpc-full.pdf" download class="strip-btn">PDF</a>
+      <a href="/downloads/against-cpc-full.docx" download class="strip-btn">DOCX</a>
+      <button class="strip-btn" onclick={stripCopyBib}>
+        {stripCopiedBib ? 'Copied!' : 'BibTeX'}
+      </button>
+      <button class="strip-btn" onclick={stripCopyUrl}>
+        {stripCopiedUrl ? 'Copied!' : 'Copy URL'}
+      </button>
+    </div>
 
     <!-- ── Title & byline ──────────────────────────────────── -->
     <h1 class="paper-title">
@@ -815,14 +902,496 @@
       />
     </section>
 
-    <!-- ── More sections deferred to Phase 2B ── -->
-    <div class="phase-marker">
-      <p>
-        §6 Dynamic Throat Model and GW Echo Signatures · §7 Landauer–Deutsch Bound ·
-        §8 Observational Roadmap · §9 Historical Coda · §10 Conclusion · References
-        — <em>coming in Phase 2B</em>
+    <!-- ══════════════════════════════════════════════════════
+         §6  DYNAMIC THROAT MODEL AND GW ECHO SIGNATURES
+    ═══════════════════════════════════════════════════════ -->
+    <section id="sec-6">
+      <h2 class="section-h2">6. Dynamic Throat Model and Gravitational-Wave Echo Signatures</h2>
+
+      <EpistemicCallout tier={2} title="Scope of this section">
+        The Israel junction condition formalism is Tier I. The damped oscillator model for throat
+        perturbations and the echo spectrum formula follow from this by standard methods (Tier II).
+        The three anchor constants are defined within this framework.
+      </EpistemicCallout>
+
+      <h3 class="section-h3">6.1 Israel Junction Conditions at the Throat</h3>
+
+      <p class="prose">
+        The thin-shell formalism of Israel (1966) bridges the bulk stress-energy of Eq. (5.10) to
+        observable surface quantities. Let <KatexInline latex="\Sigma" description="Sigma: the throat hypersurface" />
+        denote the throat hypersurface at
+        <KatexInline latex={String.raw`r = a_0`} description="r equals a-zero: the throat surface" />,
+        with induced metric
+        <KatexInline latex={String.raw`h_{ij}`} description="h-ij: induced metric on the throat" />
+        and extrinsic curvature
+        <KatexInline latex={String.raw`K_{ij}`} description="K-ij: extrinsic curvature of the throat" />.
+        The junction conditions are:
       </p>
-    </div>
+
+      <KatexBlock
+        number="6.1"
+        latex={String.raw`[K_{ij}] - h_{ij}[K] = -8\pi G\,S_{ij}`}
+        description="The Israel junction condition: the jump in extrinsic curvature across the throat equals minus 8 pi G times the surface stress-energy."
+      />
+
+      <p class="prose">
+        where <KatexInline latex={String.raw`[\cdot]`} description="square brackets: jump across Sigma" />
+        denotes the jump across
+        <KatexInline latex="\Sigma" description="Sigma: the throat hypersurface" />
+        and
+        <KatexInline latex={String.raw`S_{ij}`} description="S-ij: surface stress-energy of the shell" />
+        is the surface stress-energy of the shell. Decomposing
+        <KatexInline latex={String.raw`S_{ij}`} />:
+      </p>
+
+      <KatexBlock
+        number="6.2"
+        latex={String.raw`S_{ij} = \mathrm{diag}(-\sigma_{\text{throat}},\,p_s)`}
+        description="The surface stress-energy tensor: a thin shell with negative surface energy density sigma-throat and surface pressure p-s."
+      />
+
+      <p class="prose">
+        The surface energy density
+        <KatexInline latex={String.raw`\sigma_{\text{throat}}`} description="sigma-throat: surface energy density, first anchor constant" />
+        is our first anchor constant. The viscous correction to the surface stress introduces the
+        second anchor constant
+        <KatexInline latex="\eta_s" description="eta-s: membrane viscosity, second anchor constant" />
+        (membrane viscosity), and the equilibrium throat radius
+        <KatexInline latex="a_0" description="a-zero: equilibrium throat radius, third anchor constant" />
+        is the third.
+      </p>
+
+      <h3 class="section-h3">6.2 Three Anchor Constants</h3>
+
+      <DataTable
+        headers={ANCHOR_HEADERS}
+        rows={ANCHOR_ROWS}
+        caption="Three anchor constants parameterising the dynamic throat model"
+      />
+
+      <h3 class="section-h3">6.3 Throat Perturbation Dynamics</h3>
+
+      <p class="prose">
+        Perturbing the throat radius as
+        <KatexInline latex={String.raw`a(t) = a_0 + \delta a(t)`} description="a of t equals a-zero plus delta-a: the perturbed throat radius" />,
+        the linearised equation of motion for the shell, derived from the Israel conditions, is:
+      </p>
+
+      <KatexBlock
+        number="6.3"
+        latex={String.raw`\ddot{\delta a} + 2\eta_s\,\dot{\delta a} + \frac{\sigma_{\text{throat}}}{a_0^2}\,\delta a = 0`}
+        description="The damped oscillator equation for throat radius perturbation: second derivative plus 2 eta-s times first derivative plus sigma-throat over a-zero-squared times delta-a equals zero."
+      />
+
+      <p class="prose">
+        This is a damped harmonic oscillator for the throat radius. Three qualitatively distinct
+        regimes follow directly:
+      </p>
+
+      <DataTable
+        headers={DAMPING_HEADERS}
+        rows={DAMPING_ROWS}
+        caption="Throat oscillation regimes and their observational consequences"
+      />
+
+      <h3 class="section-h3">6.4 The Dynamic Throat Echo Spectrum Formula</h3>
+
+      <p class="prose">
+        The Green's function of the damped oscillator equation (6.3) gives the throat radius
+        response to an impulsive perturbation (such as a binary merger GW event). In the
+        underdamped regime, the echo spectrum — the frequency-domain power of GW echoes produced
+        by the oscillating throat — is:
+      </p>
+
+      <KatexBlock
+        number="9b"
+        latex={String.raw`\hat{H}(f) = A_0 \cdot \left(\frac{f}{f_0}\right)^{\!2} \cdot e^{-\eta_s f/f_0^2} \cdot \left[1+\left(\frac{f}{f_0}\right)^{\!2}\right]^{-1}`}
+        description="The predicted gravitational-wave echo spectrum as a function of frequency f: amplitude A-zero times f over f-zero squared, times an exponential decay, times a Lorentzian roll-off."
+      />
+
+      <p class="prose">
+        where
+        <KatexInline
+          latex={String.raw`f_0 = \tfrac{1}{2\pi}\sqrt{\sigma_{\text{throat}}/a_0^2}`}
+          description="f-zero: the characteristic echo frequency, equal to one over 2 pi times the square root of sigma-throat over a-zero-squared"
+        />
+        is the characteristic echo frequency, and
+        <KatexInline latex="A_0" description="A-zero: normalisation amplitude set by the triggering event" />
+        is a normalisation constant set by the amplitude of the triggering event. The spectrum
+        peaks near
+        <KatexInline latex="f_0" description="f-zero: peak echo frequency" />,
+        rolls off below (suppressed by the
+        <KatexInline latex="\beta = 2" description="beta equals 2: the low-frequency spectral index" />
+        low-frequency tail) and above (exponential damping by
+        <KatexInline latex="\eta_s" description="eta-s: membrane viscosity controlling the high-frequency decay" />),
+        and is distinct from the primary GW signal in three ways: it arrives after the main event,
+        it has a characteristic repeated structure (successive echoes at intervals
+        <KatexInline latex={String.raw`\Delta t \sim \pi/f_0`} description="delta-t approximately pi over f-zero: the echo repeat interval" />),
+        and its damping rate is set by
+        <KatexInline latex="\eta_s" />
+        rather than by the primary merger parameters.
+      </p>
+
+      <EpistemicCallout tier={2} title="Observational Status of the Echo Prediction">
+        These three observational signatures — time delay, periodicity, and independent damping
+        rate — constitute a falsifiable prediction. Detection of GW echoes consistent with the
+        <KatexInline latex={String.raw`(a_0, \sigma_{\text{throat}}, \eta_s)`} description="the three anchor-constant parameter family" />
+        parameter family would constitute the first observational evidence for exotic compact
+        objects with traversable-wormhole-type throats.
+      </EpistemicCallout>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         §7  LANDAUER–DEUTSCH INFORMATION BOUND
+    ═══════════════════════════════════════════════════════ -->
+    <section id="sec-7">
+      <h2 class="section-h2">7. The Landauer–Deutsch Information Bound</h2>
+
+      <EpistemicCallout tier={2} title="Scope of this section">
+        The Landauer principle is established thermodynamics. Deutsch's CTC information framework
+        is well-developed. Their combination as a constraint on CTC information throughput is a
+        Tier II extrapolation.
+      </EpistemicCallout>
+
+      <h3 class="section-h3">7.1 Information and Exotic Matter: The Bound</h3>
+
+      <p class="prose">
+        A traversable wormhole supporting CTCs is also an information channel: signals sent through
+        the wormhole can in principle arrive before they are sent. This raises the question of how
+        much information can be transmitted per unit of exotic matter energy budget.
+      </p>
+
+      <p class="prose">
+        Combining the Landauer principle (each bit erased costs at least
+        <KatexInline latex={String.raw`k_B T \ln 2`} description="k-B T ln 2: Landauer energy cost per bit" />
+        of energy) with Deutsch's formulation of information flow through CTC regions (consistent
+        CTC computations require a fixed-point condition on density matrices), the maximum
+        information throughput
+        <KatexInline latex="I" description="I: information throughput in bits" />
+        through a CTC supported by exotic matter energy budget
+        <KatexInline latex={String.raw`E_{\text{ex}}`} description="E-ex: exotic matter energy budget" />
+        is bounded by:
+      </p>
+
+      <KatexBlock
+        number="7.1"
+        latex={String.raw`I \leq \frac{E_{\text{ex}}}{k_B T \ln 2} \cdot \eta_{\text{CTC}}`}
+        description="The Landauer-Deutsch information bound: bits transmittable through a CTC channel are bounded by the exotic energy divided by k-B T ln 2, multiplied by a CTC efficiency factor eta-CTC."
+      />
+
+      <p class="prose">
+        where
+        <KatexInline latex={String.raw`\eta_{\text{CTC}} < 1`} description="eta-CTC: CTC efficiency factor, less than one" />
+        is a CTC efficiency factor accounting for the Novikov self-consistency constraint (not all
+        computational operations are consistent with self-consistent CTC evolution). This is the
+        Landauer–Deutsch bound.
+      </p>
+
+      <h3 class="section-h3">7.2 Implications for the CPC</h3>
+
+      <p class="prose">
+        The bound has two consequences for the CPC argument. First, it confirms that CTCs are not
+        computationally unconstrained: Novikov self-consistency limits what can be computed through
+        a CTC channel, and the Landauer bound limits the throughput. Time travel, if possible, is
+        thermodynamically expensive and informationally limited — not a route to paradox-free
+        omniscience.
+      </p>
+
+      <p class="prose">
+        Second, the bound connects to the Kerr suppression result: as rotation reduces
+        <KatexInline latex={String.raw`E_{\text{ex}}`} description="E-ex: exotic matter energy budget" />
+        toward zero, the information throughput
+        <KatexInline latex="I" description="I: information throughput" />
+        also approaches zero unless
+        <KatexInline latex="T" description="T: temperature" />
+        simultaneously increases. A near-extremal rotating wormhole throat is stable but has very
+        low CTC information capacity — which is thermodynamically consistent with the third law of
+        black hole mechanics (extremal objects have vanishing Hawking temperature, hence large
+        Landauer cost per bit).
+      </p>
+
+      <p class="prose">
+        This is a pleasant consistency check: the framework does not permit a near-extremal
+        rotating wormhole to be simultaneously cheap to maintain and informationally rich. The
+        physics constrains itself.
+      </p>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         §8  OBSERVATIONAL ROADMAP: FIVE MILESTONES
+    ═══════════════════════════════════════════════════════ -->
+    <section id="sec-8">
+      <h2 class="section-h2">8. Observational Roadmap: Five Milestones</h2>
+
+      <EpistemicCallout tier={2} title="Scope of this section">
+        The GW echo framework and detector sensitivities are established. The specific thresholds
+        stated here are informed estimates, not published experimental results.
+      </EpistemicCallout>
+
+      <p class="prose">
+        The theoretical framework developed in this paper generates specific, falsifiable
+        predictions at five levels of observational sophistication. We present them in order of
+        increasing experimental requirement.
+      </p>
+
+      <EpistemicCallout tier={2} title="Milestone 1 — GW Echo Detection">
+        Search LIGO O4/O5 and Einstein Telescope data for post-merger echoes with the spectral
+        signature of Eq. (9b). A detection consistent with the
+        <KatexInline latex={String.raw`(a_0, \sigma_{\text{throat}}, \eta_s)`} description="the three-parameter family" />
+        parameter family at &gt;3σ significance would constitute the first evidence for exotic
+        compact objects with traversable-wormhole-type throats. The characteristic time delay and
+        periodic echo structure are distinct from all known astrophysical post-merger signals. This
+        milestone is achievable with existing detector technology and Bayesian matched-filter
+        methods.
+      </EpistemicCallout>
+
+      <EpistemicCallout tier={2} title="Milestone 2 — Kerr Suppression Scaling">
+        If echo signals are detected, measure the echo amplitude as a function of the primary
+        object's spin parameter
+        <KatexInline latex="a/M" description="a over M: dimensionless spin parameter" />.
+        The Kerr suppression factor
+        <KatexInline latex={String.raw`\sqrt{1 - a^2/M^2}`} description="square root of one minus a-squared over M-squared: the Kerr suppression factor" />
+        predicts that the exotic matter budget — and hence the restoring force
+        <KatexInline latex={String.raw`\sigma_{\text{throat}}`} description="sigma-throat: surface energy density" /> —
+        should decrease systematically as spin increases. A correlation between spin and echo
+        frequency
+        <KatexInline latex="f_0" description="f-zero: characteristic echo frequency" />
+        would confirm the rotating wormhole model over alternatives.
+      </EpistemicCallout>
+
+      <EpistemicCallout tier={2} title="Milestone 3 — Information Throughput Constraints">
+        If CTCs are supported by observed wormhole-type objects, their information throughput is
+        bounded by the Landauer–Deutsch bound (Eq. 7.1). Observations constraining
+        <KatexInline latex={String.raw`E_{\text{ex}}`} description="E-ex: exotic energy budget" />
+        and
+        <KatexInline latex="T" description="T: temperature from thermal emission" />
+        (from thermal emission) can place bounds on
+        <KatexInline latex={String.raw`\eta_{\text{CTC}}`} description="eta-CTC: CTC efficiency factor" />.
+        A measurement of
+        <KatexInline latex={String.raw`\eta_{\text{CTC}} \approx 0`} description="eta-CTC approximately zero: computationally trivial" />
+        would indicate that consistent CTC evolution is computationally trivial in this system;
+        <KatexInline latex={String.raw`\eta_{\text{CTC}}`} />
+        close to 1 would indicate near-maximal CTC computational power.
+      </EpistemicCallout>
+
+      <EpistemicCallout tier={3} title="Milestone 4 — Mixed-State Horizon Thermodynamics">
+        The Gap III argument (§4.4) predicts that chronology horizons of traversable wormholes
+        carry mixed rather than pure quantum states. This should produce a measurable thermal
+        signature distinct from Hawking radiation: a quasi-thermal emission spectrum with
+        temperature set by the mixing entropy rather than by the surface gravity. Distinguishing
+        this from Hawking radiation requires sub-Planck frequency resolution, but the predicted
+        spectral shape is qualitatively different.
+      </EpistemicCallout>
+
+      <EpistemicCallout tier={3} title="Milestone 5 — Direct Throat Imaging">
+        The Event Horizon Telescope or next-generation VLBI arrays could in principle resolve the
+        shadow of an exotic compact object with a traversable wormhole throat. The shadow
+        morphology predicted by the rotating wormhole metric differs from that of a Kerr black
+        hole in the inner shadow structure — the wormhole throat produces a secondary image of the
+        far-side spacetime. This is the most demanding milestone, requiring angular resolution
+        beyond current capabilities, but constitutes the definitive direct observational test.
+      </EpistemicCallout>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         §9  HISTORICAL AND THEOLOGICAL CODA
+    ═══════════════════════════════════════════════════════ -->
+    <section id="sec-9">
+      <h2 class="section-h2">9. Historical and Theological Coda</h2>
+
+      <h3 class="section-h3">9.1 Vedic Kala: Time as Structured Hierarchy</h3>
+
+      <p class="prose">
+        The Sanskrit concept of <em>kala</em> (time, from the root <em>kal-</em>, to count or
+        reckon) does not map simply onto the physicist's parameter <KatexInline latex="t" description="t: the physicist's time parameter" />.
+        In the Vedic astronomical tradition, time is structured as a hierarchy of nested cycles:
+        the paramanu (indivisible moment), truti, nimesha, kala (in the astronomical sense, 1/1800
+        of a day), muhurta, ahoratra (day), paksha, masa, ritu, ayana, samvatsara, and ultimately
+        the vast cosmological cycles of manvantara and kalpa. The structure is not circular but
+        spirally recursive: each great cycle contains within it the same internal structure as the
+        previous, but at a different phase.
+      </p>
+
+      <p class="prose">
+        This structure is not irrelevant to the physics of CTCs. The Novikov self-consistency
+        principle — which requires that events on a CTC must be consistent with themselves — has a
+        structural analogue in the Vedic notion of <em>rita</em> (cosmic order, the regularity of
+        cycles). In both frameworks, time is not a free variable to be traversed arbitrarily; it
+        is a structured constraint that self-consistency imposes on events. The physicist's
+        "consistent histories" formulation of CTC evolution and the Vedic notion of dharmic
+        regularity describe the same formal constraint in different conceptual vocabularies.
+      </p>
+
+      <p class="prose">
+        The <em>kala</em> tradition also predicts what we might call temporal granularity: a
+        minimum unit of time below which the concept of "before" and "after" loses meaning. This
+        maps onto the Planck time in modern physics. Whether this is coincidence or structural
+        inevitability — whether any sufficiently developed cosmology must posit a minimum time
+        scale — is an open question in comparative philosophy of physics.
+      </p>
+
+      <h3 class="section-h3">9.2 Boethius, Aquinas, and the Block Universe</h3>
+
+      <p class="prose">
+        The most theologically sophisticated treatments of time in the Western tradition are those
+        of Boethius (c. 524 CE) and Thomas Aquinas (c. 1274 CE). Both argue that divine eternity
+        is not endless time but the simultaneous possession of all time — what Boethius calls
+        <em>tota simul</em> (literally: all at once). In this view, God does not experience
+        temporal succession; the entirety of created time is present to the divine intellect as a
+        single eternal now.
+      </p>
+
+      <p class="prose">
+        This metaphysical picture maps with surprising precision onto the block universe
+        interpretation of general relativity. In the block universe, all spacetime events exist
+        simultaneously as a four-dimensional manifold; the experience of temporal flow is a
+        perspectival feature of observers embedded in the manifold, not a feature of the manifold
+        itself. The "eternal now" of Boethius is structurally equivalent to the block universe's
+        atemporal simultaneity.
+      </p>
+
+      <p class="prose">
+        The connection to CTCs is this: in a block universe with CTCs, closed timelike curves are
+        not paradoxes — they are simply closed loops in the four-manifold. From the block universe
+        perspective (equivalently, from the divine <em>tota simul</em> perspective), there is no
+        "before the loop begins" or "after it ends"; the loop simply is, as a geometric object.
+        The Novikov self-consistency principle is then not a constraint imposed from outside but an
+        analytic feature of what it means for the loop to exist as a consistent geometric object.
+      </p>
+
+      <p class="prose">
+        Aquinas's treatment of divine foreknowledge without temporal determination provides an
+        additional resonance. Aquinas argues that God knows future contingents not by knowing them
+        "before" they happen but by knowing them in their eternal presentness — the events are
+        future for us, but present to God. This is structurally equivalent to saying that in the
+        block universe, no event is genuinely future from the perspective of the full
+        four-manifold; all events are equally "present" as geometric objects, and an observer with
+        access to the full manifold (a Creator-level perspective) would perceive no temporal
+        asymmetry.
+      </p>
+
+      <p class="prose">
+        The CPC's failure, on this reading, is not merely a technical failure of a physics
+        argument. It is a failure to take seriously the possibility that causality — the feature
+        of our physical theories that the CPC is designed to protect — is a perspectival feature
+        of embedded observers, not a constraint on the structure of spacetime itself. A theory
+        that allows CTCs is not a theory that permits causality violations; it is a theory that
+        treats causality as what it is: an emergent, perspectival regularity, not a fundamental
+        law.
+      </p>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         §10  CONCLUSION
+    ═══════════════════════════════════════════════════════ -->
+    <section id="sec-10">
+      <h2 class="section-h2">10. Conclusion</h2>
+
+      <p class="prose">
+        We have argued that Hawking's Chronology Protection Conjecture fails as a universal
+        prohibition on past-directed time travel for four independent reasons.
+      </p>
+
+      <p class="prose">
+        First (Section 3), there is no bridging theorem connecting Ford–Roman quantum inequality
+        constraints to the thin-shell exotic matter parameters required by traversable wormhole
+        stability. The two frameworks are mathematically incommensurable in their present form,
+        and the gap has not been closed in the literature.
+      </p>
+
+      <p class="prose">
+        Second (Section 4), the Kay–Radzikowski–Wald stress-energy divergence theorem applies
+        only to compactly generated chronology horizons. Traversable wormholes produce
+        non-compactly-generated horizons, which fall outside the theorem's hypothesis. The Li–Gott
+        vacuum construction demonstrates that at least one quantum state exists on a
+        CTC-containing spacetime without divergence, proving that the divergence is state-dependent
+        rather than universal.
+      </p>
+
+      <p class="prose">
+        Third (Section 4.4), the Hawking–KRW divergence is derived under pure-state boundary
+        conditions. The physical argument for expecting a pure state at a chronology horizon — the
+        boundary of the causality-violating region — is weak; a mixed state is physically more
+        natural. The mixed-state regime has not been analysed, and until it is, the divergence
+        result cannot be claimed as a physical prediction rather than a mathematical artifact.
+      </p>
+
+      <p class="prose">
+        Fourth (Section 5), the combined stress-energy configuration of rotating matter, exotic
+        matter shell, and their Kerr coupling demonstrates that near-extremal rotation reduces the
+        exotic matter requirement to near zero. The Kerr suppression factor
+        <KatexInline latex={String.raw`\sqrt{1 - a^2/M^2}`} description="square root of one minus a-squared over M-squared: the Kerr suppression factor" />
+        eliminates the practical objection that exotic matter requirements are physically
+        unreasonable.
+      </p>
+
+      <p class="prose">
+        The positive case — a stable, traversable, rotating wormhole throat parameterised by
+        <KatexInline latex={String.raw`(a_0, \sigma_{\text{throat}}, \eta_s)`} description="the three anchor constants" /> —
+        is consistent with all known physical constraints and generates the falsifiable GW echo
+        spectrum of Eq. (9b). Milestone 1 of the observational roadmap is achievable with
+        near-future detector technology.
+      </p>
+
+      <p class="prose">
+        The theological and historical codas are not decorative. They situate the physics in a
+        wider intellectual tradition that has independently arrived at structural conclusions —
+        the block universe, consistent-histories causality, temporal granularity — that the
+        physics of CTCs now makes precise. The chronology protection conjecture was, in
+        retrospect, a category error: it attempted to enforce at the level of fundamental physics
+        a constraint that is properly emergent at the level of embedded observers.
+      </p>
+
+      <p class="prose coda-close">
+        Time, as Boethius understood, is <em>tota simul</em> — all at once — from the outside.
+        The physics of closed timelike curves is the mathematical grammar of what that looks like
+        from within.
+      </p>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         REFERENCES
+    ═══════════════════════════════════════════════════════ -->
+    <section id="sec-refs" class="refs-section">
+      <h2 class="section-h2">References</h2>
+
+      <ol class="refs">
+        <li>Boethius, A. M. S. (c. 524). <em>Consolatio Philosophiae</em>, Book V. Trans. V. E. Watts. Penguin Classics, 1969.</li>
+        <li>Deutsch, D. (1991). Quantum mechanics near closed timelike lines. <em>Physical Review D</em>, 44(10), 3197–3217.</li>
+        <li>Ford, L. H., &amp; Roman, T. A. (1995). Averaged energy conditions and quantum inequalities. <em>Physical Review D</em>, 51(8), 4277–4286.</li>
+        <li>Ford, L. H., &amp; Roman, T. A. (1997). Restrictions on negative energy density in flat spacetime. <em>Physical Review D</em>, 55(4), 2082–2089.</li>
+        <li>Gott, J. R. (1991). Closed timelike curves produced by pairs of moving cosmic strings. <em>Physical Review Letters</em>, 66(9), 1126–1129.</li>
+        <li>Hawking, S. W. (1992). Chronology protection conjecture. <em>Physical Review D</em>, 46(2), 603–611.</li>
+        <li>Israel, W. (1966). Singular hypersurfaces and thin shells in general relativity. <em>Il Nuovo Cimento B</em>, 44(1), 1–14.</li>
+        <li>Kay, B. S., Radzikowski, M. J., &amp; Wald, R. M. (1997). Quantum field theory on spacetimes with a compactly generated Cauchy horizon. <em>Communications in Mathematical Physics</em>, 183(3), 533–556.</li>
+        <li>Kerr, R. P. (1963). Gravitational field of a spinning mass as an example of algebraically special metrics. <em>Physical Review Letters</em>, 11(5), 237–238.</li>
+        <li>Landauer, R. (1961). Irreversibility and heat generation in the computing process. <em>IBM Journal of Research and Development</em>, 5(3), 183–191.</li>
+        <li>Li, L.-X., &amp; Gott, J. R. (1998). Self-consistent vacuum for Misner space and the chronology protection conjecture. <em>Physical Review Letters</em>, 80(13), 2980–2983.</li>
+        <li>Morris, M. S., &amp; Thorne, K. S. (1988). Wormholes in spacetime and their use for interstellar travel. <em>American Journal of Physics</em>, 56(5), 395–412.</li>
+        <li>Morris, M. S., Thorne, K. S., &amp; Yurtsever, U. (1988). Wormholes, time machines, and the weak energy condition. <em>Physical Review Letters</em>, 61(13), 1446–1449.</li>
+        <li>Novikov, I. D. (1989). An analysis of the operation of a time machine. <em>Journal of Experimental and Theoretical Physics</em>, 68(3), 439–443.</li>
+        <li>Thomas Aquinas (c. 1274). <em>Summa Theologiae</em>, Ia, Q. 14, Art. 13. Trans. Fathers of the English Dominican Province. Benziger Bros., 1947.</li>
+        <li>Thorne, K. S. (1994). <em>Black Holes and Time Warps: Einstein's Outrageous Legacy</em>. W. W. Norton &amp; Company.</li>
+        <li>Visser, M. (1995). <em>Lorentzian Wormholes: From Einstein to Hawking</em>. AIP Press.</li>
+        <li>Visser, M., Kar, S., &amp; Dadhich, N. (2003). Traversable wormholes with arbitrarily small energy condition violations. <em>Physical Review Letters</em>, 90(20), 201102.</li>
+        <li>Wald, R. M. (1984). <em>General Relativity</em>. University of Chicago Press.</li>
+        <li>Wald, R. M. (1994). <em>Quantum Field Theory in Curved Spacetime and Black Hole Thermodynamics</em>. University of Chicago Press.</li>
+      </ol>
+    </section>
+
+    <!-- ── Honest-constraints footer ─────────────────────── -->
+    <details class="honest-footer">
+      <summary>A note on feasibility →</summary>
+      <p>
+        The simulations and calculations on this site implement the theoretical framework of the
+        paper faithfully. The exotic matter requirements shown are physically real constraints —
+        at current technology, a macroscopic traversable wormhole is not buildable. This paper
+        and its companion tools demonstrate how the physics parameters relate, not that the object
+        is constructible. All Tier III (conjectural) and Tier IV (gap) content is marked
+        throughout. The goal is to show what the physics permits in principle, and to help
+        identify what needs solving for principle to become practice.
+      </p>
+    </details>
 
   </main>
 
@@ -936,5 +1505,205 @@
     font-size: 12px;
     color: var(--sub);
     margin: 0;
+  }
+
+  /* ── References section ──────────────────────────────────── */
+  .refs-section {
+    margin-top: 56px;
+  }
+
+  .refs {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+    padding-left: 0;
+    list-style-position: inside;
+    margin-block: 20px 0;
+  }
+
+  .refs li {
+    padding-left: 2.5ch;
+    text-indent: -2.5ch;
+    margin-bottom: 14px;
+  }
+
+  .refs li::marker {
+    color: var(--sub);
+  }
+
+  .refs li a {
+    color: var(--teal);
+    text-decoration: none;
+  }
+
+  .refs li a:hover {
+    text-decoration: underline;
+  }
+
+  .refs li em,
+  .refs li i {
+    color: var(--text);
+  }
+
+  /* ── §10 closing line ────────────────────────────────────── */
+  .coda-close {
+    margin-top: 32px;
+    font-style: italic;
+    text-align: center;
+    color: var(--sub);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  /* ── Honest-constraints footer ───────────────────────────── */
+  .honest-footer {
+    background: var(--deep);
+    border: 1px solid var(--dim);
+    padding: 16px;
+    border-radius: 2px;
+    margin-block: 48px 24px;
+  }
+
+  .honest-footer summary {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--sub);
+    cursor: pointer;
+    list-style: none;
+    text-transform: uppercase;
+    user-select: none;
+  }
+
+  /* Hide default disclosure triangle in all browsers */
+  .honest-footer summary::-webkit-details-marker { display: none; }
+
+  .honest-footer summary::before {
+    content: '›';
+    display: inline-block;
+    margin-right: 8px;
+    transition: transform 0.2s;
+  }
+
+  .honest-footer[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .honest-footer p {
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    padding-top: 12px;
+    margin: 0;
+  }
+
+  /* ── Mobile nav dropdown (default: hidden on desktop) ────── */
+  .mobile-nav-wrap {
+    display: none;
+  }
+
+  .mobile-nav-select {
+    width: 100%;
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--dim);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 10px 12px;
+    border-radius: 2px;
+  }
+
+  /* ── Condensed tools strip (default: hidden on desktop) ─── */
+  .paper-tools-strip {
+    display: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .strip-btn {
+    border: 1px solid var(--dim);
+    color: var(--text);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .strip-btn:hover {
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+
+  /* ── Mobile (<768px) ─────────────────────────────────────── */
+  @media (max-width: 767px) {
+    .paper-layout {
+      grid-template-columns: 1fr;
+      gap: 0;
+      padding: 24px 20px;
+    }
+
+    .col-nav {
+      display: none;
+    }
+
+    .col-tools {
+      display: none;
+    }
+
+    .mobile-nav-wrap {
+      display: block;
+      margin-bottom: 20px;
+    }
+
+    .paper-tools-strip {
+      display: flex;
+    }
+
+    .paper-main {
+      max-width: 100%;
+    }
+
+    .paper-title {
+      font-size: 24px;
+    }
+
+    .section-h2 {
+      font-size: 22px;
+    }
+
+    .abstract-box {
+      padding: 16px;
+    }
+  }
+
+  /* ── Tablet (768px–1023px) ───────────────────────────────── */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .paper-layout {
+      grid-template-columns: 200px 1fr;
+      gap: 24px;
+    }
+
+    .col-tools {
+      display: none;
+    }
+
+    .mobile-nav-wrap {
+      display: none;
+    }
+
+    .paper-tools-strip {
+      display: flex;
+    }
   }
 </style>
