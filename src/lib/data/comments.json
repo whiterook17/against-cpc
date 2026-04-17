@@ -1,0 +1,32 @@
+[
+  {
+    "id": "seed-001",
+    "name": "Danny (author)",
+    "background": "physicist",
+    "category": "MATHEMATICAL GAP",
+    "gap_ref": 1,
+    "body": "The Ford–Roman worldline quantum inequality bounds negative energy along geodesics, but the Morris–Thorne exotic matter requirement is formulated as a surface integral over the wormhole throat shell. Has anyone seen a rigorous theorem bridging these two frameworks? The gap seems to require a distributional stress-energy argument that I have not been able to locate in the literature.",
+    "approved": true,
+    "created_at": "2026-04-01T10:00:00Z"
+  },
+  {
+    "id": "seed-002",
+    "name": "Danny (author)",
+    "background": "physicist",
+    "category": "THEORETICAL",
+    "gap_ref": 2,
+    "body": "The Klinkhammer–Ravishankar–Wald divergence result depends critically on the assumption of a compactly generated chronology horizon. Traversable wormhole spacetimes typically do not satisfy this — their horizons (if they form at all under parameter tuning) are non-compactly generated. Can KRW be extended, or does the non-compact case require entirely different machinery? A positive result here would substantially weaken CPC for the Kerr wormhole construction.",
+    "approved": true,
+    "created_at": "2026-04-01T10:05:00Z"
+  },
+  {
+    "id": "seed-003",
+    "name": "Danny (author)",
+    "background": "physicist",
+    "category": "MATHEMATICAL GAP",
+    "gap_ref": 3,
+    "body": "Standard proofs of the chronology protection conjecture assume pure quantum states at the boundary, but physical black hole interiors and cosmological settings are better described by mixed states (thermal or Hawking radiation). Does the stress-energy tensor divergence near a forming chronology horizon persist under mixed-state boundary conditions? My suspicion is that decoherence softens the divergence, but I have no proof.",
+    "approved": true,
+    "created_at": "2026-04-01T10:10:00Z"
+  }
+]
