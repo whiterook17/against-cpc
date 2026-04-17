@@ -75,7 +75,7 @@
 </script>
 
 <div class="scene-wrap" role="img" aria-label="Real-time simulation of a rotating Kerr wormhole spacetime. Adjust sliders in the control panel to change the geometry.">
-  <Canvas>
+  <Canvas rendererParameters={{ antialias: true }}>
     <T.PerspectiveCamera makeDefault fov={60} near={0.1} far={200} position={[0, 8, 20]}>
       <OrbitControls enableDamping dampingFactor={0.08} minDistance={4} maxDistance={60} />
     </T.PerspectiveCamera>

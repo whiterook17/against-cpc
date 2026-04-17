@@ -61,6 +61,9 @@
     const cam = camera.current;
     if (!ren || !scn || !cam) return;
 
+    // Crisp rendering on high-DPI screens
+    ren.setPixelRatio(window.devicePixelRatio);
+
     // --- Spacetime grid ---
     const gridGeo = new THREE.PlaneGeometry(22, 22, 32, 32);
     gridGeo.rotateX(-Math.PI / 2);
