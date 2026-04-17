@@ -2,7 +2,6 @@
 <!-- All Three.js scene objects. Must be a child of <Canvas>. Svelte 5 runes. -->
 <script lang="ts">
   import { useThrelte, useTask, T } from '@threlte/core';
-  import { OrbitControls } from '@threlte/extras';
   import { onMount, onDestroy } from 'svelte';
   import { gsap } from 'gsap';
   import * as THREE from 'three';
@@ -58,7 +57,8 @@
   onMount(() => {
     const ren = renderer;
     const scn = scene;
-    const cam = camera;
+    // camera is a CurrentWritable<THREE.Camera> — use .current for the raw instance
+    const cam = camera.current;
     if (!ren || !scn || !cam) return;
 
     // --- Spacetime grid ---
@@ -147,12 +147,6 @@
     echoRing.rotation.x = Math.PI / 2;
     scn.add(echoRing);
 
-    // --- Camera position ---
-    if ('position' in cam) {
-      (cam as THREE.PerspectiveCamera).position.set(14, 10, 14);
-      (cam as THREE.PerspectiveCamera).lookAt(0, 0, 0);
-    }
-
     // --- Bloom post-processing ---
     composer = new EffectComposer(ren);
     composer.addPass(new RenderPass(scn, cam as THREE.Camera));
@@ -216,7 +210,7 @@
     const c = $computed;
     const p = $params;
 
-    if (!renderer || !scene || !camera) return;
+    if (!renderer || !scene) return;
 
     // Update shader uniforms from computed store
     const a = p.a_over_M * p.M;
@@ -293,11 +287,6 @@
     }
   }
 </script>
-
-<!-- Camera set up imperatively in onMount; provide a default perspective via T.PerspectiveCamera -->
-<T.PerspectiveCamera makeDefault fov={60} near={0.1} far={200} position={[14, 10, 14]}>
-  <OrbitControls enableDamping dampingFactor={0.08} minDistance={4} maxDistance={60} />
-</T.PerspectiveCamera>
 
 <T.AmbientLight intensity={0.3} />
 <T.DirectionalLight position={[10, 20, 10]} intensity={0.8} />

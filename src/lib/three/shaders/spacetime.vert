@@ -2,6 +2,8 @@
 // Displaces grid vertices to visualise Kerr metric spatial curvature (embedding diagram).
 // Flamm paraboloid + frame-dragging azimuthal twist.
 
+precision mediump float;
+
 uniform float u_M;
 uniform float u_a;
 uniform float u_time;

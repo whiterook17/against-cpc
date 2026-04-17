@@ -1,6 +1,8 @@
 // src/lib/three/shaders/spacetime.frag
 // Colours the curvature grid from flat-space navy through teal to high-curvature gold.
 
+precision mediump float;
+
 varying float v_curvature;
 
 void main() {

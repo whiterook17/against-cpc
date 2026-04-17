@@ -1,6 +1,8 @@
 // src/lib/three/shaders/throat.vert
 // Scales the throat sphere to a0 + δa(t) and adds a surface ripple.
 
+precision mediump float;
+
 uniform float u_pulse;   // δa(t) from Worker
 uniform float u_time;
 uniform float u_a0;      // equilibrium throat radius

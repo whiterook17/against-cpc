@@ -1,6 +1,8 @@
 // src/lib/three/shaders/throat.frag
 // Purple glow, bloom-ready. Brightens with pulse amplitude, rim glow at edges.
 
+precision mediump float;
+
 uniform float u_pulse;
 uniform float u_a0;
 uniform float u_time;

@@ -2,7 +2,8 @@
 <!-- Threlte Canvas wrapping the full Kerr wormhole scene. Svelte 5 runes. -->
 <!-- Workers are managed here; scene objects live in SimulatorSceneObjects.svelte. -->
 <script lang="ts">
-  import { Canvas } from '@threlte/core';
+  import { Canvas, T } from '@threlte/core';
+  import { OrbitControls } from '@threlte/extras';
   import SimulatorSceneObjects from './SimulatorSceneObjects.svelte';
   import { params }   from '$lib/stores/params.js';
   import { computed } from '$lib/stores/computed.js';
@@ -75,6 +76,9 @@
 
 <div class="scene-wrap" role="img" aria-label="Real-time simulation of a rotating Kerr wormhole spacetime. Adjust sliders in the control panel to change the geometry.">
   <Canvas>
+    <T.PerspectiveCamera makeDefault fov={60} near={0.1} far={200} position={[0, 8, 20]}>
+      <OrbitControls enableDamping dampingFactor={0.08} minDistance={4} maxDistance={60} />
+    </T.PerspectiveCamera>
     <SimulatorSceneObjects
       {geodesicWorker}
       {setPerturbFn}

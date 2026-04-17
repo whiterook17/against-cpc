@@ -1,6 +1,8 @@
 // src/lib/three/shaders/ergosphere.frag
 // Soft green fill for the ergosphere volume. Applied to BackSide sphere.
 
+precision mediump float;
+
 uniform float u_time;
 
 void main() {
