@@ -2,7 +2,6 @@
 <!-- Phase 3: Engineering Visualisation — ported from throat_construct_wireframe.html -->
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { goto } from '$app/navigation';
   import { onMount, onDestroy } from 'svelte';
   import { gsap } from 'gsap';
   import DesktopRequired from '$lib/components/DesktopRequired.svelte';
@@ -112,10 +111,6 @@
     '④': '/paper#sec-5', '⑤': '/paper#sec-6', '⑥': '/paper#sec-5',
     '⑦': '/paper#sec-5', '⑧': '/paper#sec-5',
   };
-
-  function goToAnnotation(n: string) {
-    if (browser) goto(annLinks[n] ?? '/paper');
-  }
 
   // ── LIFECYCLE ────────────────────────────────────────────────────────────
   onMount(() => {
@@ -419,11 +414,11 @@
               { n: '⑥', c: 'var(--gold)',   title: 'Spin Axis J',                   body: 'Boyer–Lindquist z-axis. Lense–Thirring precession in surrounding spacetime.', eq: 'Ω_LT = GJ/c²r³·(3cos²θ−1)' },
               { n: '⑦', c: 'var(--sub)',    title: 'Spacetime Dragging Field Lines', body: 'Dashed arcs show co-rotation at ω(r,θ). Line density indicates dragging strength.', eq: null },
               { n: '⑧', c: 'var(--sub)',    title: 'Coupling Stress-Energy',        body: 'Antisymmetric interaction between rotating matter and exotic shell. Chiral.', eq: 'T^μν_coupling ~ a·ρ_ex·ε^μναβ·u_α·k_β' },
-            ] as ann}
-              <button
+            ] as ann (ann.n)}
+              <a
                 class="ann-item"
-                onclick={() => goToAnnotation(ann.n)}
-                title="Go to §{annLinks[ann.n]} in paper"
+                href={annLinks[ann.n]}
+                title="Go to paper section"
               >
                 <span class="ann-key" style="color:{ann.c}">{ann.n}</span>
                 <div class="ann-text">
@@ -431,7 +426,7 @@
                   {ann.body}
                   {#if ann.eq}<div class="ann-eq">{ann.eq}</div>{/if}
                 </div>
-              </button>
+              </a>
             {/each}
           </div>
           <div class="hs-section">
@@ -843,11 +838,10 @@
     margin-bottom: 10px;
     font-size: 10px;
     width: 100%;
-    background: none;
-    border: none;
     padding: 4px;
     cursor: pointer;
-    text-align: left;
+    text-decoration: none;
+    color: inherit;
     border-left: 2px solid transparent;
     transition: border-left-color .15s, background .15s;
     border-radius: 2px;
