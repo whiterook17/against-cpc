@@ -5,11 +5,11 @@
   import { gsap }          from 'gsap';
 
   const links = [
-    { href: '/',                        label: 'Overview'   },
-    { href: '/paper',                   label: 'The Paper'  },
-    { href: '/construct',               label: 'Construct'  },
-    { href: '/construct/simulator',     label: 'Simulator'  },
-    { href: '/discuss',                 label: 'Discuss'    },
+    { href: '/',                           label: 'Overview'       },
+    { href: '/paper',                      label: 'The Paper'      },
+    { href: '/construct',                  label: 'Construct'      },
+    { href: '/construct/parameter-lab',    label: 'Parameter Lab'  },
+    { href: '/discuss',                    label: 'Discuss'        },
   ];
 
   function isActive(href: string): boolean {
