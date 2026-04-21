@@ -2,6 +2,7 @@
 <script lang="ts">
   import { gsap } from 'gsap';
   import { onMount } from 'svelte';
+  import TldrSection from '$lib/components/TldrSection.svelte';
 
   onMount(() => {
     // Staggered reveal on load
@@ -33,6 +34,8 @@
     </div>
   </div>
 </section>
+
+<TldrSection />
 
 <style>
   .hero {

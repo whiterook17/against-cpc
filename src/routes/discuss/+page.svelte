@@ -4,6 +4,7 @@
   import { onMount }      from 'svelte';
   import { browser }      from '$app/environment';
   import GapCard          from '$lib/components/GapCard.svelte';
+  import ProblemsExplainer from '$lib/components/ProblemsExplainer.svelte';
   import CommentList      from '$lib/components/CommentList.svelte';
   import IdeaForm         from '$lib/components/IdeaForm.svelte';
   import {
@@ -82,6 +83,8 @@
   </header>
 
   <div class="page-body">
+
+    <ProblemsExplainer />
 
     <!-- Gap tracker -->
     <section class="section" aria-labelledby="gap-heading">

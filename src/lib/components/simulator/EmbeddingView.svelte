@@ -5,6 +5,7 @@
   import { params }   from '$lib/stores/params.js';
   import { computed } from '$lib/stores/computed.js';
   import AnnotationOverlay from './AnnotationOverlay.svelte';
+  import HelpIcon from '$lib/components/HelpIcon.svelte';
 
   interface Props {
     onLabelClick?: (id: string) => void;
@@ -158,7 +159,10 @@
 
 <div class="view-wrap">
   <div class="view-label">
-    <h3>Spacetime Curvature</h3>
+    <div class="view-label-header">
+      <h3>Spacetime Curvature</h3>
+      <HelpIcon text="This shows how heavy mass bends space — like a bowling ball on a trampoline. The depression in the grid represents the gravitational 'well' created by the rotating mass." />
+    </div>
     <p>How mass bends space</p>
   </div>
   <div class="canvas-container">
@@ -184,6 +188,11 @@
     background: var(--deep);
     border-bottom: 1px solid var(--dim);
     flex-shrink: 0;
+  }
+  .view-label-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .view-label h3 {
     font-family: var(--font-display);

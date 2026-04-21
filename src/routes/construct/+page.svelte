@@ -14,6 +14,7 @@
   import EmbeddingView   from '$lib/components/simulator/EmbeddingView.svelte';
   import PenroseView     from '$lib/components/simulator/PenroseView.svelte';
   import ObjectInfoCard  from '$lib/components/simulator/ObjectInfoCard.svelte';
+  import ContextBanner   from '$lib/components/ContextBanner.svelte';
 
   import { drawHifi, drawCasimir, drawOscillator } from '$lib/three/construct/drawings.js';
   import { params, loadPreset } from '$lib/stores/params.js';
@@ -241,6 +242,8 @@
     <span class="sub-head-text">Engineering Reference  //  GR Construct  //  Rev 0.4</span>
     <span class="badge">THEORETICAL</span>
   </div>
+
+  <ContextBanner dismissible={true} />
 
   <!-- Top-level tab navigation -->
   <TabNav tabs={MAIN_TABS} activeTab={mainTab} onchange={id => switchMainTab(id as 'engineering' | 'physics')} />

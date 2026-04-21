@@ -5,6 +5,7 @@
   import { params }   from '$lib/stores/params.js';
   import { computed } from '$lib/stores/computed.js';
   import AnnotationOverlay from './AnnotationOverlay.svelte';
+  import HelpIcon from '$lib/components/HelpIcon.svelte';
 
   interface Props {
     onLabelClick?: (id: string) => void;
@@ -180,7 +181,10 @@
 
 <div class="view-wrap">
   <div class="view-label">
-    <h3>Time Diagram</h3>
+    <div class="view-label-header">
+      <h3>Time Diagram</h3>
+      <HelpIcon text="This diagram shows how time flows. The vertical axis is time, horizontal is space. The shaded region shows where closed time loops might exist — meaning you could theoretically travel backwards in time." />
+    </div>
     <p>Can you travel backwards in time?</p>
   </div>
   <div class="canvas-container">
@@ -206,6 +210,11 @@
     background: var(--deep);
     border-bottom: 1px solid var(--dim);
     flex-shrink: 0;
+  }
+  .view-label-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .view-label h3 {
     font-family: var(--font-display);

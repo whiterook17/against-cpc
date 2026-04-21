@@ -5,6 +5,7 @@
   import { params }   from '$lib/stores/params.js';
   import { computed } from '$lib/stores/computed.js';
   import AnnotationOverlay from './AnnotationOverlay.svelte';
+  import HelpIcon from '$lib/components/HelpIcon.svelte';
 
   interface Props {
     geodesicPaths?: Float32Array | null;
@@ -147,7 +148,10 @@
 
 <div class="view-wrap">
   <div class="view-label">
-    <h3>Top-Down View</h3>
+    <div class="view-label-header">
+      <h3>Top-Down View</h3>
+      <HelpIcon text="This shows the wormhole from above. The purple circle is the 'throat' — the tunnel through space. The green region is where spacetime itself rotates." />
+    </div>
     <p>How it looks from above</p>
   </div>
   <div class="canvas-container">
@@ -173,6 +177,11 @@
     background: var(--deep);
     border-bottom: 1px solid var(--dim);
     flex-shrink: 0;
+  }
+  .view-label-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .view-label h3 {
     font-family: var(--font-display);
