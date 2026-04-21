@@ -113,7 +113,7 @@
 </script>
 
 <svelte:head>
-  <title>The Paper — Against Chronology Protection</title>
+  <title>The Paper — Can We Build a Wormhole?</title>
   <meta
     name="description"
     content="Against Chronology Protection: On the Insufficiency of Hawking's 1992 Conjecture — full paper by Danny, April 2026."

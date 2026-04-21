@@ -16,14 +16,15 @@
 </script>
 
 <svelte:head>
-  <title>Against Chronology Protection — Danny</title>
+  <title>Can We Build a Wormhole? — Against Chronology Protection</title>
 </svelte:head>
 
 <section class="hero">
   <div class="hero-content">
-    <h1 class="hero-title">Against Chronology Protection</h1>
-    <p class="hero-subtitle">On the Insufficiency of Hawking's 1992 Conjecture</p>
+    <h1 class="hero-title">Can We Build a Wormhole?</h1>
+    <p class="hero-subtitle">A challenge to Hawking's proof that time travel is impossible</p>
     <p class="hero-byline">Danny · April 2026</p>
+    <p class="academic-title">Formal title: <em>Against Chronology Protection: On the Insufficiency of Hawking's 1992 Conjecture</em></p>
 
     <div class="cta-row">
       <a href="/paper"    class="cta-btn">Read Paper</a>
@@ -71,6 +72,14 @@
     font-size: 0.85rem;
     color: var(--sub);
     letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+
+  .academic-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--sub);
+    margin-top: 12px;
     margin-bottom: 48px;
   }
 

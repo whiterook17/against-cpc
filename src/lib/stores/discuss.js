@@ -5,11 +5,11 @@ import { writable, derived } from 'svelte/store';
 
 export const CATEGORIES = [
   'ALL',
-  'MATHEMATICAL GAP',
+  'MATH & PHYSICS',
   'ENGINEERING',
-  'OBSERVATIONAL',
-  'THEORETICAL',
-  'CORRECTION',
+  'OBSERVATIONS',
+  'THEORY IDEAS',
+  'CORRECTIONS',
   'GENERAL',
 ];
 

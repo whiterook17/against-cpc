@@ -21,8 +21,8 @@
 
   // ── TOP-LEVEL TABS ───────────────────────────────────────────────────────────
   const MAIN_TABS = [
-    { id: 'engineering', label: '01  Engineering Blueprint' },
-    { id: 'physics',     label: '02  Physics Simulation' },
+    { id: 'engineering', label: "How It's Built" },
+    { id: 'physics',     label: 'See It In Action' },
   ];
 
   let mainTab   = $state<'engineering' | 'physics'>('engineering');
@@ -156,17 +156,17 @@
     {
       group: 'TORUS',
       sliders: [
-        { key: 'M',        label: 'Mass M',          min: 0.1,  max: 10.0, step: 0.1,  unit: 'M☉',  description: 'Total mass of rotating torus. Sets depth of gravitational well.' },
-        { key: 'a_over_M', label: 'Spin a/M',        min: 0.0,  max: 0.99, step: 0.01, unit: '',    description: 'Spin parameter ratio. At 0.99 → near-extremal. Kerr suppression → 0.' },
-        { key: 'R_torus',  label: 'Torus radius R',  min: 1.0,  max: 20.0, step: 0.5,  unit: 'r_g', description: 'Major radius of torus. Determines spatial extent of frame-dragging.' },
+        { key: 'M',        label: 'Total Mass',     min: 0.1,  max: 10.0, step: 0.1,  unit: 'M☉',  description: 'How heavy is the rotating ring? (Measured in solar masses)' },
+        { key: 'a_over_M', label: 'Rotation Speed', min: 0.0,  max: 0.99, step: 0.01, unit: '',    description: 'How fast is it spinning? (0 = not spinning, 0.99 = nearly maximum)' },
+        { key: 'R_torus',  label: 'Torus radius R', min: 1.0,  max: 20.0, step: 0.5,  unit: 'r_g', description: 'Major radius of torus. Determines spatial extent of frame-dragging.' },
       ],
     },
     {
       group: 'THROAT',
       sliders: [
-        { key: 'sigma_throat', label: 'Surface tension σ',      min: 0.01, max: 2.0, step: 0.01, unit: '',    description: 'Surface energy density of exotic shell. Sets oscillation frequency f₀.' },
-        { key: 'a0',           label: 'Throat radius a₀',       min: 0.1,  max: 5.0, step: 0.05, unit: 'r_g', description: 'Equilibrium throat radius. Smaller → cheaper in rotation cost.' },
-        { key: 'eta_s',        label: 'Membrane viscosity η_s', min: 0.01, max: 1.0, step: 0.01, unit: '',    description: 'Shear viscosity of throat membrane. Controls echo decay rate.' },
+        { key: 'sigma_throat', label: 'Exotic Matter Strength', min: 0.01, max: 2.0, step: 0.01, unit: '',    description: 'How much negative energy holds the throat open? (Higher = stiffer)' },
+        { key: 'a0',           label: 'Throat Size',            min: 0.1,  max: 5.0, step: 0.05, unit: 'r_g', description: 'How wide is the wormhole tunnel? (In units of gravitational radius)' },
+        { key: 'eta_s',        label: 'Damping',                min: 0.01, max: 1.0, step: 0.01, unit: '',    description: 'How quickly do vibrations die down? (Higher = faster decay)' },
       ],
     },
   ];
@@ -231,7 +231,7 @@
 </script>
 
 <svelte:head>
-  <title>Construct the Wormhole — Against Chronology Protection</title>
+  <title>Explore the Physics — Can We Build a Wormhole?</title>
 </svelte:head>
 
 <DesktopRequired title="Construct — Desktop Required">

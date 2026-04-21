@@ -179,7 +179,10 @@
 </script>
 
 <div class="view-wrap">
-  <div class="view-label">PENROSE — CAUSAL STRUCTURE</div>
+  <div class="view-label">
+    <h3>Time Diagram</h3>
+    <p>Can you travel backwards in time?</p>
+  </div>
   <div class="canvas-container">
     <canvas
       bind:this={canvas}
@@ -199,15 +202,26 @@
     border: 1px solid var(--dim);
   }
   .view-label {
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--sub);
-    padding: 5px 10px;
+    padding: 8px 10px;
     background: var(--deep);
     border-bottom: 1px solid var(--dim);
     flex-shrink: 0;
+  }
+  .view-label h3 {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text);
+    margin: 0 0 2px;
+    text-transform: uppercase;
+  }
+  .view-label p {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--sub);
+    margin: 0;
+    letter-spacing: 0.5px;
   }
   .canvas-container {
     position: relative;

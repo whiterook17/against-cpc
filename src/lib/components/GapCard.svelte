@@ -32,12 +32,12 @@
   class:open={status === 'OPEN'}
   role="button"
   tabindex="0"
-  aria-label="Gap {number}: {title}. Status {status}. Click to view comments."
+  aria-label="Problem {number}: {title}. Status {status}. Click to view comments."
   onclick={handleClick}
   onkeydown={handleKeydown}
 >
   <div class="card-header">
-    <span class="gap-number">GAP {number}</span>
+    <span class="gap-number">PROBLEM {number}</span>
     <span class="status-badge" class:open={status === 'OPEN'}>{status}</span>
   </div>
 

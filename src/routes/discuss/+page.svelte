@@ -52,7 +52,7 @@
   const ideaCount = $derived((gapNum: number) =>
     ($allComments as { gap_ref: number | null; category: string }[]).filter(c =>
       c.gap_ref === gapNum &&
-      (c.category === 'MATHEMATICAL GAP' || c.category === 'THEORETICAL')
+      (c.category === 'MATH & PHYSICS' || c.category === 'THEORY IDEAS')
     ).length
   );
 
@@ -62,7 +62,7 @@
 </script>
 
 <svelte:head>
-  <title>Discussion — Against Chronology Protection</title>
+  <title>Community Discussion — Can We Build a Wormhole?</title>
   <meta name="description" content="Community discussion of the open mathematical gaps in the chronology protection conjecture." />
 </svelte:head>
 
@@ -74,10 +74,10 @@
       <span class="bc-sep">›</span>
       <span class="bc-current">Discussion</span>
     </div>
-    <h1 class="page-title">OPEN GAPS &amp; DISCUSSION</h1>
+    <h1 class="page-title">OPEN PROBLEMS &amp; DISCUSSION</h1>
     <p class="page-sub">
-      Four unresolved mathematical gaps identified in the paper. Each is a precisely
-      formulated missing result. Contributions, corrections, and counterexamples welcome.
+      What we still need to figure out. Four precisely formulated open problems from the paper.
+      Contributions, corrections, and counterexamples welcome.
     </p>
   </header>
 
@@ -87,7 +87,7 @@
     <section class="section" aria-labelledby="gap-heading">
       <h2 class="section-heading" id="gap-heading">
         <span class="heading-num">01</span>
-        OPEN GAPS
+        OPEN PROBLEMS
         <span class="heading-badge">{gaps.length} identified</span>
       </h2>
       <div class="gap-grid">
