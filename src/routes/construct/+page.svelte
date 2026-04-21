@@ -15,6 +15,9 @@
   import PenroseView     from '$lib/components/simulator/PenroseView.svelte';
   import ObjectInfoCard  from '$lib/components/simulator/ObjectInfoCard.svelte';
   import ContextBanner   from '$lib/components/ContextBanner.svelte';
+  import LayerInfoPanel  from '$lib/components/LayerInfoPanel.svelte';
+  import UnitToggle      from '$lib/components/UnitToggle.svelte';
+  import ViewExplanation from '$lib/components/simulator/ViewExplanation.svelte';
 
   import { drawHifi, drawCasimir, drawOscillator } from '$lib/three/construct/drawings.js';
   import { params, loadPreset } from '$lib/stores/params.js';
@@ -58,6 +61,9 @@
   let engTab   = $state<'wireframe' | 'hifi'>('wireframe');
   let wireframeEl: HTMLElement | null = $state(null);
   let hifiEl:      HTMLElement | null = $state(null);
+
+  let selectedLayer = $state<string | null>(null);
+  let hoveredLayer  = $state<string | null>(null);
 
   let showLabels = $state(true);
   let showDims   = $state(true);
@@ -274,6 +280,24 @@
           <div class="diagram-panel">
             <div class="diagram-title">// FIG 1 — AXIAL CROSS-SECTION (not to scale)</div>
 
+            <div class="layer-pills">
+              {#each [
+                { id: 'torus',    label: '01 Torus',    color: 'var(--teal)' },
+                { id: 'coupling', label: '02 Coupling',  color: 'var(--gold)' },
+                { id: 'casimir',  label: '03 Casimir',   color: 'var(--purple)' },
+                { id: 'throat',   label: '04 Throat',    color: 'var(--red)' },
+              ] as lp (lp.id)}
+                <button
+                  class="layer-pill"
+                  class:selected={selectedLayer === lp.id}
+                  style="--pill-color: {lp.color}"
+                  onclick={() => { selectedLayer = selectedLayer === lp.id ? null : lp.id; }}
+                  onmouseenter={() => { hoveredLayer = lp.id; }}
+                  onmouseleave={() => { hoveredLayer = null; }}
+                >{lp.label}</button>
+              {/each}
+            </div>
+
             <svg class="main-diagram" viewBox="0 0 700 620" xmlns="http://www.w3.org/2000/svg" aria-label="Axial cross-section diagram of the rotating exotic-stabilised throat construct showing four nested layers: rotating dense torus, coupling zone, Casimir array, and stabilised throat">
               <defs>
                 <radialGradient id="w-tG" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#a070e0" stop-opacity=".9"/><stop offset="60%" stop-color="#5030a0" stop-opacity=".4"/><stop offset="100%" stop-color="#a070e0" stop-opacity="0"/></radialGradient>
@@ -352,48 +376,7 @@
           </div>
 
           <div class="sidebar">
-            <div class="sidebar-section">
-              <h3>// Layer Architecture</h3>
-              <div class="layer-item"><div class="layer-dot teal"></div><div class="layer-info"><h4 class="teal">L1 — Rotating Dense Torus</h4><p>Maximally dense matter ring at a→M. Generates frame dragging ω(r,θ). Primary Kerr suppression driver.</p></div></div>
-              <div class="layer-item"><div class="layer-dot green"></div><div class="layer-info"><h4 class="green">L2 — Coupling Zone</h4><p>Interior ergosphere: ω(r,θ) maximal. Geometric region, not physical structure. Minimum exotic matter cost.</p></div></div>
-              <div class="layer-item"><div class="layer-dot purple"></div><div class="layer-info"><h4 class="purple">L3 — Casimir Array</h4><p>Nested conducting shells at sub-micron gaps. NEC-violating negative energy density zone.</p></div></div>
-              <div class="layer-item"><div class="layer-dot red"></div><div class="layer-info"><h4 class="red">L4 — Stabilised Throat</h4><p>Geometric feature at a₀. Israel junction equilibrium. Damped harmonic oscillator dynamics.</p></div></div>
-            </div>
-            <div class="sidebar-section">
-              <h3>// Anchor Constants</h3>
-              <div class="param-row"><div class="param-sym">a₀</div><div class="param-desc">Equilibrium throat radius. Rest position of geometric feature.</div></div>
-              <div class="param-row"><div class="param-sym">σ_throat</div><div class="param-desc">Surface energy density. Spring constant for throat oscillations. Sets echo freq f₀.</div></div>
-              <div class="param-row"><div class="param-sym">η_s</div><div class="param-desc">Membrane shear viscosity. Controls oscillation decay. Echo damping rate.</div></div>
-              <div class="param-row"><div class="param-sym">a/M</div><div class="param-desc">Spin parameter ratio. As a→M, exotic budget→0.</div></div>
-            </div>
-            <div class="sidebar-section">
-              <h3>// System State</h3>
-              <div class="status-row"><span class="status-label">SPIN FACTOR a/M</span><div class="status-bar"><div class="status-fill" style="width:78%;background:var(--teal)"></div></div></div>
-              <div class="status-row"><span class="status-label">EXOTIC BUDGET τ</span><div class="status-bar"><div class="status-fill" style="width:22%;background:var(--purple)"></div></div></div>
-              <div class="status-row"><span class="status-label">THROAT STABILITY</span><div class="status-bar"><div class="status-fill" style="width:91%;background:var(--green)"></div></div></div>
-              <div class="status-row"><span class="status-label">KERR SUPPRESSION</span><div class="status-bar"><div class="status-fill" style="width:63%;background:var(--gold)"></div></div></div>
-            </div>
-            <div class="sidebar-section">
-              <h3>// Engineering Status</h3>
-              <p class="eng-status">
-                <span style="color:var(--green)">■</span> Architecture: Theoretically coherent<br>
-                <span style="color:var(--gold)">■</span> Kerr suppression: Derived (Tier II)<br>
-                <span style="color:var(--purple)">■</span> Coupling tensor: Schematic (Tier III)<br>
-                <span style="color:var(--red)">■</span> Realisation: Beyond current tech<br>
-                <span style="color:var(--red)">■</span> Bottleneck: Torus density + spin rate
-              </p>
-            </div>
-            <div class="sidebar-section">
-              <h3>// Ref Equations</h3>
-              <p class="ref-eqs">
-                Eq 5.1 — T_total decomposition<br>
-                Eq 5.4 — ω(r,θ) frame dragging<br>
-                Eq 5.8 — Kerr tension suppression<br>
-                Eq 6.1 — Israel junction cond.<br>
-                Eq 6.3 — Throat oscillator<br>
-                Eq 9b  — Echo spectrum
-              </p>
-            </div>
+            <LayerInfoPanel layerId={selectedLayer ?? hoveredLayer} />
           </div>
         </div>
 
@@ -424,10 +407,10 @@
             </div>
             <div class="tool-group">
               <span class="tool-label">Layers</span>
-              <button class="pill teal"   class:off={!layers.torus}    onclick={() => toggleLayer('torus')}>L1 Torus</button>
-              <button class="pill green"  class:off={!layers.coupling} onclick={() => toggleLayer('coupling')}>L2 Coupling</button>
-              <button class="pill purple" class:off={!layers.casimir}  onclick={() => toggleLayer('casimir')}>L3 Casimir</button>
-              <button class="pill red"    class:off={!layers.throat}   onclick={() => toggleLayer('throat')}>L4 Throat</button>
+              <button class="pill teal"   class:off={!layers.torus}    class:sel={selectedLayer==='torus'}    onclick={() => { toggleLayer('torus');    selectedLayer = selectedLayer === 'torus'    ? null : 'torus';    }}>L1 Torus</button>
+              <button class="pill green"  class:off={!layers.coupling} class:sel={selectedLayer==='coupling'} onclick={() => { toggleLayer('coupling'); selectedLayer = selectedLayer === 'coupling' ? null : 'coupling'; }}>L2 Coupling</button>
+              <button class="pill purple" class:off={!layers.casimir}  class:sel={selectedLayer==='casimir'}  onclick={() => { toggleLayer('casimir');  selectedLayer = selectedLayer === 'casimir'  ? null : 'casimir';  }}>L3 Casimir</button>
+              <button class="pill red"    class:off={!layers.throat}   class:sel={selectedLayer==='throat'}   onclick={() => { toggleLayer('throat');   selectedLayer = selectedLayer === 'throat'   ? null : 'throat';   }}>L4 Throat</button>
             </div>
             <div class="tool-group">
               <span class="tool-label">View</span>
@@ -459,6 +442,9 @@
             </div>
 
             <div class="hifi-sidebar">
+              <div class="hs-section hs-panel">
+                <LayerInfoPanel layerId={selectedLayer ?? hoveredLayer} />
+              </div>
               <div class="hs-section">
                 <h3>// Structural Annotations</h3>
                 {#each [
@@ -516,7 +502,7 @@
   {:else}
     <div bind:this={physicsEl}>
 
-      <!-- Physics top bar: presets -->
+      <!-- Physics top bar: presets + unit toggle -->
       <div class="phys-topbar">
         <span class="phys-title">KERR WORMHOLE — REAL-TIME PHYSICS</span>
         <span class="preset-label">PRESET:</span>
@@ -528,6 +514,9 @@
             aria-pressed={activePreset === preset.id}
           >{preset.label}</button>
         {/each}
+        <div class="topbar-unit-toggle">
+          <UnitToggle />
+        </div>
       </div>
 
       <!-- Parameter sliders (3-column grid) -->
@@ -561,10 +550,22 @@
 
       <!-- 4-panel views grid -->
       <div class="views-grid" class:info-open={activeObjectId !== null}>
-        <EquatorialView {geodesicPaths} {nParticles} {nSteps} onLabelClick={id => (activeObjectId = id)} />
-        <MeridionalView  onLabelClick={id => (activeObjectId = id)} />
-        <EmbeddingView   onLabelClick={id => (activeObjectId = id)} />
-        <PenroseView     onLabelClick={id => (activeObjectId = id)} />
+        <div class="view-unit">
+          <EquatorialView {geodesicPaths} {nParticles} {nSteps} onLabelClick={id => (activeObjectId = id)} />
+          <ViewExplanation viewId="equatorial" />
+        </div>
+        <div class="view-unit">
+          <MeridionalView onLabelClick={id => (activeObjectId = id)} />
+          <ViewExplanation viewId="meridional" />
+        </div>
+        <div class="view-unit">
+          <EmbeddingView onLabelClick={id => (activeObjectId = id)} />
+          <ViewExplanation viewId="embedding" />
+        </div>
+        <div class="view-unit">
+          <PenroseView onLabelClick={id => (activeObjectId = id)} />
+          <ViewExplanation viewId="penrose" />
+        </div>
       </div>
 
     </div><!-- end physics tab -->
@@ -613,6 +614,46 @@
   .etab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
   .tab-num { color: var(--dim); margin-right: 8px; font-size: 9px; }
   .etab-btn.active .tab-num { color: var(--teal); opacity: .5; }
+
+  /* ── Layer pills (wireframe diagram column) ── */
+  .layer-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-self: flex-start;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .layer-pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 5px 13px;
+    border: 1px solid var(--dim);
+    background: none;
+    color: var(--sub);
+    cursor: pointer;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+
+  .layer-pill:hover {
+    color: var(--pill-color);
+    border-color: var(--pill-color);
+  }
+
+  .layer-pill.selected {
+    color: var(--pill-color);
+    border-color: var(--pill-color);
+    background: rgba(255,255,255,0.04);
+  }
+
+  /* hifi sidebar panel section — no extra padding */
+  .hs-panel { padding: 0 !important; border: none !important; }
+
+  /* hifi pill selected highlight */
+  .pill.sel { box-shadow: 0 0 0 1px currentColor inset; }
 
   /* ── Wireframe workspace ── */
   .workspace {
@@ -773,10 +814,22 @@
   .views-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
+    gap: 24px;
+    padding: 20px 20px 32px;
     transition: margin-right 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .views-grid.info-open { margin-right: 300px; }
+
+  .view-unit {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar-unit-toggle {
+    margin-left: auto;
+    padding-left: 16px;
+    border-left: 1px solid var(--dim);
+  }
 
   /* ── Mobile ── */
   @media (max-width: 767px) {
@@ -787,8 +840,9 @@
     .controls-row { grid-template-columns: 1fr; }
     .slider-group { border-right: none; border-bottom: 1px solid var(--dim); }
     .constraints-notice { max-width: none; border-left: none; border-top: 3px solid var(--gold); }
-    .views-grid { grid-template-columns: 1fr; }
+    .views-grid { grid-template-columns: 1fr; gap: 32px; }
     .views-grid.info-open { margin-right: 0; }
+    .topbar-unit-toggle { margin-left: 0; padding-left: 0; border-left: none; }
     .eq-strip { grid-template-columns: 1fr; }
   }
 </style>
