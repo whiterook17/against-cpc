@@ -7,6 +7,7 @@
   import ProblemsExplainer from '$lib/components/ProblemsExplainer.svelte';
   import CommentList      from '$lib/components/CommentList.svelte';
   import IdeaForm         from '$lib/components/IdeaForm.svelte';
+  import FaqAccordion from '$lib/components/FaqAccordion.svelte';
   import {
     activeCategory,
     activeGap,
@@ -107,6 +108,16 @@
         {/each}
       </div>
     </section>
+
+    <div class="section-divider">
+      <span class="divider-label">FREQUENTLY ASKED QUESTIONS</span>
+    </div>
+
+    <FaqAccordion />
+
+    <div class="section-divider">
+      <span class="divider-label">COMMUNITY DISCUSSION</span>
+    </div>
 
     <!-- Category filter + comment list -->
     <section class="section" aria-labelledby="comments-heading">
@@ -230,6 +241,29 @@
   .section-intro {
     font-family: var(--font-body); font-size: 13px; color: var(--sub);
     line-height: 1.6; margin: 0;
+  }
+
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0 32px;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--dim);
+  }
+
+  .divider-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--sub);
+    letter-spacing: 3px;
+    white-space: nowrap;
   }
 
   .discuss-footer {
