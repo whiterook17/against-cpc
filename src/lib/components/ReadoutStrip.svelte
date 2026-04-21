@@ -3,6 +3,8 @@
 <script lang="ts">
   import { computed } from '$lib/stores/computed.js';
   import { tau_SI, feasibility_gap_orders, echo_interval, echoes_detectable } from '$lib/stores/computed.js';
+  import { unitMode } from '$lib/stores/units.js';
+  import { formatTension } from '$lib/utils/unitConversion.js';
   import { gsap } from 'gsap';
 
   interface Props {
@@ -62,15 +64,18 @@
     <span class="label">ω(throat)</span>
     <span class="value">{d_omega.toFixed(4)}</span>
     <span class="unit">rad/s-eq</span>
+    {#if $unitMode === 'si'}<span class="si-label">frame-drag rate</span>{/if}
   </div>
   <div class="readout-cell">
     <span class="label">Kerr factor</span>
     <span class="value">{d_kerr_pct.toFixed(1)}%</span>
+    {#if $unitMode === 'si'}<span class="si-label">cost reduction</span>{/if}
   </div>
   <div class="readout-cell">
     <span class="label">f₀</span>
     <span class="value">{d_f0.toFixed(4)}</span>
     <span class="unit">Hz-eq</span>
+    {#if $unitMode === 'si'}<span class="si-label">oscillation freq</span>{/if}
   </div>
 
   <div class="readout-cell tau-cell" role="button" tabindex="0"
@@ -83,6 +88,10 @@
     <span class="label">τ required</span>
     <span class="value tau-value">{@html fmtTau(d_tau_exp)}</span>
     <span class="unit">J/m²</span>
+    {#if $unitMode === 'si'}
+      <span class="si-label si-tau">{formatTension($tau_SI)}</span>
+      <span class="si-gap">{$feasibility_gap_orders.toFixed(0)} orders above lab max</span>
+    {/if}
     {#if showTauCard}
       <div class="tau-card" role="tooltip">
         <div class="tau-row"><span>Required τ:</span><span>{@html fmtTau(d_tau_exp)} J/m²</span></div>
@@ -105,6 +114,7 @@
     <span class="value" class:good={d_stability > 60} class:warn={d_stability > 30 && d_stability <= 60} class:bad={d_stability <= 30}>
       {d_stability.toFixed(0)}%
     </span>
+    {#if $unitMode === 'si'}<span class="si-label">{$computed.damping_regime}</span>{/if}
   </div>
   <div class="readout-cell">
     <span class="label">Regime</span>
@@ -199,6 +209,23 @@
     color: var(--sub);
     margin-top: 8px;
     line-height: 1.4;
+  }
+
+  .si-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--gold);
+    margin-top: 1px;
+    display: block;
+    line-height: 1.2;
+  }
+  .si-tau { color: var(--gold); }
+  .si-gap {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--red);
+    display: block;
+    line-height: 1.2;
   }
 
   .perturb-cell { justify-content: center; border-right: none; }

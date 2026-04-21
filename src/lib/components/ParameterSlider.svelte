@@ -2,6 +2,8 @@
 <!-- Physics slider with live GSAP-tweened readout. Svelte 5 runes. -->
 <script lang="ts">
   import { params } from '$lib/stores/params.js';
+  import { unitMode } from '$lib/stores/units.js';
+  import { formatRgAsKm } from '$lib/utils/unitConversion.js';
   import { gsap }   from 'gsap';
 
   interface Props {
@@ -15,6 +17,12 @@
   }
 
   let { key, label, min, max, step, unit, description }: Props = $props();
+
+  const SPATIAL_KEYS = ['a0', 'R_torus'];
+  const showSI  = $derived($unitMode === 'si' && SPATIAL_KEYS.includes(key));
+  const siValue = $derived(
+    showSI ? formatRgAsKm($params[key as keyof typeof $params] as number ?? 0, $params.M ?? 1.0) : null
+  );
 
   // Display value tweens smoothly; actual param updates immediately.
   // Use 0 as initial state; $effect below will tween to the real value on first run.
@@ -42,7 +50,12 @@
 <div class="slider-wrap">
   <div class="slider-header">
     <span class="slider-label">{label}</span>
-    <span class="slider-value">{displayValue.toFixed(3)}<span class="unit">{unit}</span></span>
+    <div class="slider-value-wrap">
+      <span class="slider-value">{displayValue.toFixed(3)}<span class="unit">{unit}</span></span>
+      {#if showSI && siValue}
+        <span class="slider-si">= {siValue}</span>
+      {/if}
+    </div>
   </div>
   <input
     type="range"
@@ -66,7 +79,19 @@
   .slider-header {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: flex-start;
+  }
+  .slider-value-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
+  .slider-si {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--gold);
+    line-height: 1;
   }
   .slider-label {
     font-family: var(--font-mono);
