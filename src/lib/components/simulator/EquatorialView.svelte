@@ -1,9 +1,12 @@
 <!-- src/lib/components/simulator/EquatorialView.svelte -->
 <!-- Top-down equatorial plane (θ=π/2): axes, torus, ergosphere, field lines, throat, geodesics. -->
 <script lang="ts">
+  import { get } from 'svelte/store';
   import { browser } from '$app/environment';
   import { params }   from '$lib/stores/params.js';
   import { computed } from '$lib/stores/computed.js';
+  import { unitMode } from '$lib/stores/units.js';
+  import { formatRgAsKm } from '$lib/utils/unitConversion.js';
   import AnnotationOverlay from './AnnotationOverlay.svelte';
   import HelpIcon from '$lib/components/HelpIcon.svelte';
 
@@ -24,6 +27,7 @@
     if (!browser || !canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    void $unitMode;
     draw(ctx, $computed, $params, geodesicPaths);
   });
 
@@ -41,6 +45,8 @@
     ctx.translate(W / 2, H / 2);
 
     // Concentric reference circles at 1, 5, 10 r_g
+    const M = p.M ?? 1.0;
+    const isSI = get(unitMode) === 'si';
     ctx.lineWidth = 1;
     [1, 5, 10].forEach(r => {
       ctx.beginPath();
@@ -50,7 +56,8 @@
       ctx.fillStyle = 'rgba(106, 138, 170, 0.65)';
       ctx.font = '10px "Share Tech Mono"';
       ctx.textAlign = 'left';
-      ctx.fillText(`${r} r_g`, r * SCALE + 3, -2);
+      const label = isSI ? `${r} rg = ${formatRgAsKm(r, M)}` : `${r} r_g`;
+      ctx.fillText(label, r * SCALE + 3, -2);
     });
     // Cross-hair guide lines
     ctx.strokeStyle = 'rgba(42, 63, 90, 0.25)';

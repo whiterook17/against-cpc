@@ -2,9 +2,12 @@
 <!-- 2D sweep canvas — renders colour map, overlays, hover tooltip. Svelte 5 runes. -->
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import { get } from 'svelte/store';
   import { browser } from '$app/environment';
   import { goto }    from '$app/navigation';
   import { loadPreset } from '$lib/stores/params.js';
+  import { unitMode } from '$lib/stores/units.js';
+  import { formatRgAsKm } from '$lib/utils/unitConversion.js';
   import {
     DEFAULT_PARAMS,
     TAU_GEOM_TO_SI_PER_SOLAR_MASS,
@@ -243,13 +246,18 @@
     const xLbl=PARAM_OPTIONS.find(p=>p.key===sr.xKey)?.label??sr.xKey;
     const yLbl=PARAM_OPTIONS.find(p=>p.key===sr.yKey)?.label??sr.yKey;
     const oLbl=OUTPUT_OPTIONS.find(o=>o.key===sr.outputKey)?.label??sr.outputKey;
+    const SPATIAL = ['a0', 'R_torus'];
+    const isSI = get(unitMode) === 'si';
+    const M = DEFAULT_PARAMS.M ?? 1.0;
+    const fmtX = (isSI && SPATIAL.includes(sr.xKey)) ? `${xv.toFixed(3)} rg = ${formatRgAsKm(xv, M)}` : xv.toFixed(3);
+    const fmtY = (isSI && SPATIAL.includes(sr.yKey)) ? `${yv.toFixed(3)} rg = ${formatRgAsKm(yv, M)}` : yv.toFixed(3);
     const lines=[
-      `${xLbl}: ${xv.toFixed(3)}`,
-      `${yLbl}: ${yv.toFixed(3)}`,
+      `${xLbl}: ${fmtX}`,
+      `${yLbl}: ${fmtY}`,
       `${oLbl}: ${val.toExponential(3)}`,
       '[CLICK → load in simulator]',
     ];
-    const tipW=240, tipH=lines.length*16+14;
+    const tipW = isSI ? 290 : 240, tipH=lines.length*16+14;
     let tx=cx_+12, ty=cy_-tipH/2;
     if (tx+tipW>CW-4) tx=cx_-tipW-12;
     if (ty<4) ty=4;

@@ -84,6 +84,7 @@
 }`;
   let stripCopiedBib = $state(false);
   let stripCopiedUrl = $state(false);
+  let unitRefOpen    = $state(false);
 
   function stripPulse(el: HTMLElement) {
     gsap.fromTo(el, { scale: 1 }, { scale: 1.06, duration: 0.1, yoyo: true, repeat: 1 });
@@ -152,7 +153,55 @@
       </button>
     </div>
 
-    <!-- ── Title & byline ──────────────────────────────────── -->
+    <!-- ── Unit reference box ───────────────────────────────── -->
+    <div class="unit-ref-box">
+      <button class="unit-ref-toggle" onclick={() => unitRefOpen = !unitRefOpen} aria-expanded={unitRefOpen}>
+        <span class="unit-ref-label">UNIT REFERENCE</span>
+        <span class="unit-ref-hint">Geometric units used throughout this paper</span>
+        <span class="unit-ref-caret">{unitRefOpen ? '▲' : '▼'}</span>
+      </button>
+      {#if unitRefOpen}
+        <div class="unit-ref-body">
+          <div class="unit-ref-grid">
+            <div class="unit-ref-col">
+              <h5>Geometric Units</h5>
+              <table class="unit-table">
+                <tbody>
+                  <tr><td class="ut-sym">c = G = 1</td><td class="ut-desc">Speed of light and gravity set to 1</td></tr>
+                  <tr><td class="ut-sym">r_g = GM/c²</td><td class="ut-desc">Gravitational radius (length unit)</td></tr>
+                  <tr><td class="ut-sym">t_g = GM/c³</td><td class="ut-desc">Gravitational time unit</td></tr>
+                  <tr><td class="ut-sym">τ [geom]</td><td class="ut-desc">Tension in geometric units (dimensionless per area)</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="unit-ref-col">
+              <h5>SI Conversions</h5>
+              <table class="unit-table">
+                <tbody>
+                  <tr><td class="ut-sym">1 r_g</td><td class="ut-desc">= 1.477 × M/M☉ km</td></tr>
+                  <tr><td class="ut-sym">1 t_g</td><td class="ut-desc">= 4.93 × 10⁻⁶ × M/M☉ s</td></tr>
+                  <tr><td class="ut-sym">τ [SI]</td><td class="ut-desc">= τ [geom] × c⁴/G × M [kg]   J/m²</td></tr>
+                  <tr><td class="ut-sym">Casimir max</td><td class="ut-desc">~10⁻³ J/m² (lab achievable)</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="unit-ref-col">
+              <h5>Key Symbols</h5>
+              <table class="unit-table">
+                <tbody>
+                  <tr><td class="ut-sym">a/M</td><td class="ut-desc">Spin parameter (0 = static, 1 = extremal Kerr)</td></tr>
+                  <tr><td class="ut-sym">a₀</td><td class="ut-desc">Wormhole throat radius [r_g]</td></tr>
+                  <tr><td class="ut-sym">ω</td><td class="ut-desc">Frame-dragging angular velocity [rad/t_g]</td></tr>
+                  <tr><td class="ut-sym">f₀</td><td class="ut-desc">Throat oscillation / echo frequency [1/t_g]</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      {/if}
+    </div>
+
+    <!-- ── Title & byline ───────────────────────────────────── -->
     <h1 class="paper-title">
       Against Chronology Protection: On the Insufficiency of Hawking's 1992 Conjecture
     </h1>
@@ -1645,6 +1694,95 @@
     color: var(--teal);
   }
 
+  /* ── Unit reference box ──────────────────────────────────── */
+  .unit-ref-box {
+    margin-bottom: 24px;
+    border: 1px solid var(--dim);
+    border-radius: 3px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+
+  .unit-ref-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .unit-ref-toggle:hover { background: rgba(0, 200, 200, 0.04); }
+  .unit-ref-toggle:focus-visible { outline: 2px solid var(--teal); outline-offset: -2px; }
+
+  .unit-ref-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--teal);
+    flex-shrink: 0;
+  }
+
+  .unit-ref-hint {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--sub);
+    flex: 1;
+  }
+
+  .unit-ref-caret {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--sub);
+    flex-shrink: 0;
+  }
+
+  .unit-ref-body {
+    border-top: 1px solid var(--dim);
+    padding: 16px;
+  }
+
+  .unit-ref-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .unit-ref-col h5 {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--sub);
+    margin: 0 0 10px;
+  }
+
+  .unit-table { width: 100%; border-collapse: collapse; }
+  .unit-table tr { border-bottom: 1px solid rgba(42, 63, 90, 0.4); }
+  .unit-table tr:last-child { border-bottom: none; }
+
+  .ut-sym {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--teal);
+    padding: 4px 8px 4px 0;
+    white-space: nowrap;
+    vertical-align: top;
+  }
+
+  .ut-desc {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--sub);
+    padding: 4px 0;
+    line-height: 1.4;
+    vertical-align: top;
+  }
+
   /* ── Mobile (<768px) ─────────────────────────────────────── */
   @media (max-width: 767px) {
     .paper-layout {
@@ -1673,6 +1811,9 @@
     .paper-main {
       max-width: 100%;
     }
+
+    .unit-ref-grid { grid-template-columns: 1fr; }
+    .unit-ref-hint { display: none; }
 
     .paper-title {
       font-size: 24px;

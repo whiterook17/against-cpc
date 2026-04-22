@@ -1,9 +1,12 @@
 <!-- src/lib/components/simulator/MeridionalView.svelte -->
 <!-- Side cross-section (r-z plane, φ=0): Flamm embedding, torus section, coupling zone, Casimir, throat. -->
 <script lang="ts">
+  import { get } from 'svelte/store';
   import { browser } from '$app/environment';
   import { params }   from '$lib/stores/params.js';
   import { computed } from '$lib/stores/computed.js';
+  import { unitMode } from '$lib/stores/units.js';
+  import { formatRgAsKm } from '$lib/utils/unitConversion.js';
   import AnnotationOverlay from './AnnotationOverlay.svelte';
   import HelpIcon from '$lib/components/HelpIcon.svelte';
 
@@ -21,6 +24,7 @@
     if (!browser || !canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    void $unitMode;
     draw(ctx, $computed, $params);
   });
 
@@ -55,8 +59,10 @@
       ctx.beginPath(); ctx.moveTo(x, zOrigin - 3); ctx.lineTo(x, zOrigin + 3); ctx.stroke();
       ctx.fillText(`${r}`, x, zOrigin + 14);
     });
+    const M = p.M ?? 1.0;
+    const isSI = get(unitMode) === 'si';
     ctx.textAlign = 'left';
-    ctx.fillText('r/r_g', PAD.l + pw + 4, zOrigin + 4);
+    ctx.fillText(isSI ? `r  (1 rg = ${formatRgAsKm(1, M)})` : 'r/r_g', PAD.l + pw + 4, zOrigin + 4);
 
     // z-axis tick marks
     ctx.textAlign = 'right';
@@ -67,7 +73,7 @@
       ctx.fillText(`${z}`, PAD.l - 5, y + 4);
     });
     ctx.textAlign = 'right';
-    ctx.fillText('z/r_g', PAD.l - 4, PAD.t + 12);
+    ctx.fillText(isSI ? 'z/rg' : 'z/r_g', PAD.l - 4, PAD.t + 12);
 
     // Vertical grid dashes
     ctx.strokeStyle = 'rgba(42, 63, 90, 0.28)';

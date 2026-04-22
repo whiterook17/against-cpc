@@ -1,9 +1,11 @@
 <!-- src/lib/components/simulator/PenroseView.svelte -->
 <!-- Conformal causal (Penrose) diagram: two diamond regions, throat band, light cones, infinities. -->
 <script lang="ts">
+  import { get } from 'svelte/store';
   import { browser } from '$app/environment';
   import { params }   from '$lib/stores/params.js';
   import { computed } from '$lib/stores/computed.js';
+  import { unitMode } from '$lib/stores/units.js';
   import AnnotationOverlay from './AnnotationOverlay.svelte';
   import HelpIcon from '$lib/components/HelpIcon.svelte';
 
@@ -19,6 +21,7 @@
     if (!browser || !canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    void $unitMode;
     draw(ctx, $computed, $params);
   });
 
@@ -82,6 +85,8 @@
       ctx.textAlign = 'left';
       ctx.fillText('R_erg', cx + THROAT_W + 4, cy - R_erg * 14 + 4);
     }
+
+    const isSI = get(unitMode) === 'si';
 
     // Chronology horizon band (near-extremal spin)
     if ((p.a_over_M ?? 0) > 0.9) {
@@ -165,6 +170,14 @@
     ctx.font = 'bold 9px "Share Tech Mono"';
     ctx.textAlign = 'center';
     ctx.fillText('THROAT', cx, cy + 5);
+
+    // CTC status note (SI mode)
+    if (isSI && (p.a_over_M ?? 0) > 0.9) {
+      ctx.fillStyle = 'rgba(224, 80, 80, 0.75)';
+      ctx.font = '9px "Share Tech Mono"';
+      ctx.textAlign = 'right';
+      ctx.fillText(`CTC ACTIVE — a/M = ${(p.a_over_M ?? 0).toFixed(2)}`, W - 8, H - 10);
+    }
 
     // Footer
     ctx.fillStyle = 'rgba(106, 138, 170, 0.55)';

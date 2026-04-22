@@ -5,6 +5,7 @@
   import { onMount }       from 'svelte';
   import DesktopRequired   from '$lib/components/DesktopRequired.svelte';
   import ParameterLabScene from './ParameterLabScene.svelte';
+  import UnitToggle        from '$lib/components/UnitToggle.svelte';
 
   // ── Axis / output options ─────────────────────────────────────────────────
   const PARAM_OPTIONS = [
@@ -77,6 +78,7 @@
         <span class="page-sub">2D sweep · Kerr spacetime · Click → Simulator</span>
       </div>
       <div class="topbar-right">
+        <UnitToggle />
         <button class="export-btn" onclick={onExport} aria-label="Export colour map as PNG">
           [EXPORT PNG]
         </button>
@@ -175,6 +177,7 @@
     gap: 12px; flex-wrap: wrap;
   }
   .topbar-left  { display: flex; align-items: center; gap: 16px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
   .back-link {
     font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px;
     text-transform: uppercase; color: var(--sub); text-decoration: none;

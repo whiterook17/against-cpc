@@ -1,9 +1,12 @@
 <!-- src/lib/components/simulator/EmbeddingView.svelte -->
 <!-- Isometric Flamm paraboloid: 32×32 grid surface driven by physics worker grid_displacements. -->
 <script lang="ts">
+  import { get } from 'svelte/store';
   import { browser } from '$app/environment';
   import { params }   from '$lib/stores/params.js';
   import { computed } from '$lib/stores/computed.js';
+  import { unitMode } from '$lib/stores/units.js';
+  import { formatRgAsKm } from '$lib/utils/unitConversion.js';
   import AnnotationOverlay from './AnnotationOverlay.svelte';
   import HelpIcon from '$lib/components/HelpIcon.svelte';
 
@@ -32,6 +35,7 @@
     if (!browser || !canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    void $unitMode;
     draw(ctx, $computed, $params);
   });
 
@@ -144,6 +148,16 @@
     ctx.setLineDash([3, 3]);
     ctx.beginPath(); ctx.moveTo(vTop.x, vTop.y); ctx.lineTo(vStem.x, vStem.y); ctx.stroke();
     ctx.setLineDash([]);
+
+    // Scale bar (bottom-right)
+    const M = p.M ?? 1.0;
+    if (get(unitMode) === 'si') {
+      const scaleLabel = `2 rg = ${formatRgAsKm(2, M)}`;
+      ctx.fillStyle = 'rgba(106, 138, 170, 0.7)';
+      ctx.font = '9px "Share Tech Mono"';
+      ctx.textAlign = 'right';
+      ctx.fillText(scaleLabel, W - 8, H - 10);
+    }
 
     ctx.fillStyle = 'rgba(106, 138, 170, 0.55)';
     ctx.font = '9px "Share Tech Mono"';

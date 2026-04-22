@@ -3,6 +3,7 @@
   import { page }          from '$app/stores';
   import { mobileNavOpen } from '$lib/stores/ui.js';
   import { gsap }          from 'gsap';
+  import UnitToggle        from '$lib/components/UnitToggle.svelte';
 
   const links = [
     { href: '/',                           label: 'Home'              },
@@ -45,6 +46,7 @@
     {/each}
   </nav>
 
+  <div class="nav-units"><UnitToggle /></div>
   <span class="nav-badge">THEORETICAL</span>
 
   <!-- Mobile hamburger -->
@@ -61,6 +63,7 @@
 
 <!-- Mobile dropdown -->
 <div class="mobile-menu" style="height:0;overflow:hidden;opacity:0" role="navigation" aria-label="Mobile navigation">
+  <div class="mobile-unit-toggle"><UnitToggle /></div>
   {#each links as { href, label }}
     <a
       {href}
@@ -138,8 +141,12 @@
     background: rgba(0, 200, 200, 0.1);
   }
 
-  .nav-badge {
+  .nav-units {
     margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .nav-badge {
     font-family: var(--font-mono);
     font-size: 10px;
     color: var(--gold);
@@ -147,6 +154,11 @@
     padding: 3px 10px;
     letter-spacing: 2px;
     flex-shrink: 0;
+  }
+
+  .mobile-unit-toggle {
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--dim);
   }
 
   .hamburger {
@@ -195,8 +207,9 @@
   }
 
   @media (max-width: 767px) {
-    .nav-links { display: none; }
+    .nav-links  { display: none; }
     .hamburger  { display: flex; }
     .nav-badge  { display: none; }
+    .nav-units  { display: none; }
   }
 </style>
